@@ -4,6 +4,22 @@ AsisGo es una solución móvil de nivel empresarial desarrollada en Flutter para
 
 ---
 
+## Capturas de Pantalla de la Aplicación
+
+| Inicio de Sesión Corporativo | Mapa Interactivo Midnight | Marcación Rápida & Selfie |
+| :---: | :---: | :---: |
+| <img src="docs/screenshots/01_login_screen.png" width="260" alt="Inicio de Sesión Corporativo" /> | <img src="docs/screenshots/02_map_midnight.png" width="260" alt="Mapa Interactivo Midnight" /> | <img src="docs/screenshots/03_attendance_modal.png" width="260" alt="Modal de Asistencia Simplificado" /> |
+
+| Jerarquía Multi-Empresa | Calendario & Auditoría | Expiración de Sesión (10 min) |
+| :---: | :---: | :---: |
+| <img src="docs/screenshots/04_companies_hierarchy.png" width="260" alt="Jerarquía Multi-Empresa y Sedes" /> | <img src="docs/screenshots/05_calendar_history.png" width="260" alt="Calendario e Historial de Marcas" /> | <img src="docs/screenshots/06_session_expired.png" width="260" alt="Diálogo de Sesión Expirada" /> |
+
+| Perfil & Horario Asignado |
+| :---: |
+| <img src="docs/screenshots/07_user_profile.png" width="260" alt="Perfil del Colaborador y Horario" /> |
+
+---
+
 ## Características Principales
 
 ### 1. Seguridad Avanzada y Detección Anti-Fake GPS
