@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:asisgo/core/widgets/asis_session_expired_dialog.dart';
+import 'package:asisgo/core/widgets/asis_skeletons.dart';
+import 'package:asisgo/features/attendance_map/presentation/widgets/attendance_action_dock.dart';
 import 'package:asisgo/features/auth/domain/user_model.dart';
 import 'package:asisgo/features/attendance_map/domain/shift_phase.dart';
 
@@ -77,5 +79,57 @@ void main() {
     await tester.tap(find.text('Volver a Iniciar Sesión'));
     await tester.pump();
     expect(dismissedViaButton, isTrue);
+  });
+
+  testWidgets('AsisShimmer and AsisBottomNavSkeleton render properly without layout errors', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: Text('Content'),
+          ),
+          bottomNavigationBar: AsisBottomNavSkeleton(),
+        ),
+      ),
+    );
+
+    expect(find.byType(AsisBottomNavSkeleton), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('AttendanceActionDock shows secondary action only when in working phase', (tester) async {
+    // 1. Fase notStarted no debe mostrar opcion de salida anticipada
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: AttendanceActionDock(
+            phase: ShiftPhase.notStarted,
+            todayRecords: const [],
+            isInsideGeozone: true,
+            onPrimaryActionPressed: () {},
+            onSecondaryActionPressed: () {},
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('¿Deseas marcar salida anticipada?'), findsNothing);
+
+    // 2. Fase working debe mostrar opcion de salida anticipada
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: AttendanceActionDock(
+            phase: ShiftPhase.working,
+            todayRecords: const [],
+            isInsideGeozone: true,
+            onPrimaryActionPressed: () {},
+            onSecondaryActionPressed: () {},
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('¿Deseas marcar salida anticipada?'), findsOneWidget);
   });
 }

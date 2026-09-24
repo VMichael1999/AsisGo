@@ -4,6 +4,8 @@ import '../../../../core/constants/app_colors.dart';
 import '../../data/auth_repository.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
+import '../../../../core/widgets/asis_shimmer.dart';
+import '../../../../core/widgets/asis_skeletons.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -47,8 +49,10 @@ class _LoginViewState extends State<LoginView> {
         builder: (context, state) {
           final isLoading = state is AuthLoading;
 
-          return SafeArea(
-            child: Center(
+          return Stack(
+            children: [
+              SafeArea(
+                child: Center(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                 child: Column(
@@ -281,7 +285,16 @@ class _LoginViewState extends State<LoginView> {
                 ),
               ),
             ),
-          );
+          ),
+          if (isLoading)
+            const Positioned.fill(
+              child: AsisLoadingOverlay(
+                skeleton: AsisLoginSkeleton(),
+                message: 'Iniciando sesión en AsisGo...',
+              ),
+            ),
+        ],
+      );
         },
       ),
     );

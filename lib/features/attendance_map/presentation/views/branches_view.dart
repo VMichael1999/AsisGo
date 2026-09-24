@@ -4,6 +4,8 @@ import '../../../../core/constants/app_colors.dart';
 import '../../domain/branch_model.dart';
 import '../cubit/location_cubit.dart';
 import '../cubit/location_state.dart';
+import '../../../../core/widgets/asis_shimmer.dart';
+import '../../../../core/widgets/asis_skeletons.dart';
 
 class BranchesView extends StatefulWidget {
   final Function(Branch branch, Geozone geozone)? onGeozoneSelected;
@@ -40,8 +42,9 @@ class _BranchesViewState extends State<BranchesView> {
       body: BlocBuilder<LocationCubit, LocationState>(
         builder: (context, state) {
           if (state is! LocationLoaded) {
-            return const Center(
-              child: CircularProgressIndicator(color: AppColors.accent),
+            return const AsisLoadingOverlay(
+              skeleton: AsisBranchesSkeleton(),
+              message: 'Cargando empresas y sucursales...',
             );
           }
 

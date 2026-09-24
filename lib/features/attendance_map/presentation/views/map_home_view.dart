@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -18,6 +19,8 @@ import '../widgets/attendance_action_dock.dart';
 import '../widgets/attendance_modal_sheet.dart';
 import '../widgets/geozone_status_badge.dart';
 import 'package:asisgo/features/calendar_history/presentation/cubit/calendar_cubit.dart';
+import '../../../../core/widgets/asis_shimmer.dart';
+import '../../../../core/widgets/asis_skeletons.dart';
 
 class MapHomeView extends StatefulWidget {
   const MapHomeView({super.key});
@@ -177,21 +180,9 @@ class _MapHomeViewState extends State<MapHomeView> {
             },
             builder: (context, locationState) {
               if (locationState is LocationLoading || locationState is LocationInitial) {
-                return Container(
-                  color: AppColors.obsidianCanvas,
-                  child: const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CircularProgressIndicator(color: AppColors.accent),
-                        SizedBox(height: 16),
-                        Text(
-                          'Sincronizando telemetría y geocercas...',
-                          style: TextStyle(color: Colors.white70, fontSize: 13),
-                        ),
-                      ],
-                    ),
-                  ),
+                return const AsisLoadingOverlay(
+                  skeleton: AsisMapSkeleton(),
+                  message: 'Sincronizando telemetría y geocercas...',
                 );
               }
 
@@ -221,6 +212,19 @@ class _MapHomeViewState extends State<MapHomeView> {
               }
 
               final loc = locationState as LocationLoaded;
+              final mediaQuery = MediaQuery.of(context);
+              final screenHeight = mediaQuery.size.height;
+              final safeAreaTop = mediaQuery.padding.top;
+              final safeAreaBottom = mediaQuery.padding.bottom;
+
+              // Calculo dinamico para evitar solapamientos con el dock de asistencia
+              final isWorkingPhase = attendanceState is AttendanceLoaded &&
+                  attendanceState.currentPhase == ShiftPhase.working;
+              final branchCardBottom = safeAreaBottom + (isWorkingPhase ? 218.0 : 176.0);
+
+              // Posicionamiento de controles flotantes y flechas laterales anticolision
+              final toolButtonsTop = safeAreaTop + 86.0;
+              final arrowTop = math.max(screenHeight * 0.48, toolButtonsTop + 195.0);
 
               // Generar elementos visuales de geocercas exclusivamente para la empresa seleccionada
               final circleMarkers = <CircleMarker>[];
@@ -453,7 +457,7 @@ class _MapHomeViewState extends State<MapHomeView> {
                     // Flecha lateral izquierda
                     Positioned(
                       left: 14,
-                      top: MediaQuery.of(context).size.height * 0.42,
+                      top: arrowTop,
                       child: AsisGlassCard(
                         borderRadius: 28,
                         padding: EdgeInsets.zero,
@@ -478,7 +482,7 @@ class _MapHomeViewState extends State<MapHomeView> {
                     // Flecha lateral derecha
                     Positioned(
                       right: 14,
-                      top: MediaQuery.of(context).size.height * 0.42,
+                      top: arrowTop,
                       child: AsisGlassCard(
                         borderRadius: 28,
                         padding: EdgeInsets.zero,
@@ -501,12 +505,14 @@ class _MapHomeViewState extends State<MapHomeView> {
                     ),
                   ],
 
-                  // Tarjeta flotante de exploracion de sedes sobre el dock
+                  // Tarjeta flotante de exploracion de sedes sobre el dock con elevacion dinamica
                   if (loc.isBranchExplorerActive)
-                    Positioned(
+                    AnimatedPositioned(
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeOutCubic,
                       left: 16,
                       right: 16,
-                      bottom: 175,
+                      bottom: branchCardBottom,
                       child: GestureDetector(
                         onTap: () => _showCompanyBranchesSheet(context, loc),
                         child: AsisGlassCard(
@@ -599,10 +605,10 @@ class _MapHomeViewState extends State<MapHomeView> {
                   // Controles flotantes del mapa
                   Positioned(
                     right: 16,
-                    top: 175,
+                    top: toolButtonsTop,
                     child: AsisGlassCard(
-                      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-                      borderRadius: 24,
+                      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                      borderRadius: 22,
                       isDark: true,
                       customBackground: const Color(0xDD0D131F),
                       customBorderColor: const Color(0x33FFFFFF),
@@ -759,6 +765,8 @@ class _MapHomeViewState extends State<MapHomeView> {
     return IconButton(
       icon: Icon(icon, color: color, size: 20),
       tooltip: tooltip,
+      constraints: const BoxConstraints(minWidth: 38, minHeight: 38),
+      padding: EdgeInsets.zero,
       visualDensity: VisualDensity.compact,
       onPressed: onTap,
     );

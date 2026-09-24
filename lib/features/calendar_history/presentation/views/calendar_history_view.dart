@@ -8,6 +8,8 @@ import 'package:asisgo/features/attendance_map/domain/shift_phase.dart';
 import 'package:asisgo/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:asisgo/features/calendar_history/presentation/cubit/calendar_cubit.dart';
 import 'package:asisgo/features/calendar_history/presentation/cubit/calendar_state.dart';
+import 'package:asisgo/core/widgets/asis_shimmer.dart';
+import 'package:asisgo/core/widgets/asis_skeletons.dart';
 
 class CalendarHistoryView extends StatefulWidget {
   const CalendarHistoryView({super.key});
@@ -54,7 +56,10 @@ class _CalendarHistoryViewState extends State<CalendarHistoryView> {
       body: BlocBuilder<CalendarCubit, CalendarState>(
         builder: (context, state) {
           if (state is CalendarLoading || state is CalendarInitial) {
-            return const Center(child: CircularProgressIndicator(color: AppColors.accent));
+            return const AsisLoadingOverlay(
+              skeleton: AsisCalendarSkeleton(),
+              message: 'Cargando historial de asistencias...',
+            );
           }
 
           if (state is CalendarError) {

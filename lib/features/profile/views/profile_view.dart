@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../auth/presentation/cubit/auth_cubit.dart';
 import '../../auth/presentation/cubit/auth_state.dart';
+import '../../../../core/widgets/asis_shimmer.dart';
+import '../../../../core/widgets/asis_skeletons.dart';
 
 class ProfileView extends StatefulWidget {
   const ProfileView({super.key});
@@ -33,7 +35,10 @@ class _ProfileViewState extends State<ProfileView> {
           final user = state.currentUser;
 
           if (user == null) {
-            return const Center(child: CircularProgressIndicator());
+            return const AsisLoadingOverlay(
+              skeleton: AsisProfileSkeleton(),
+              message: 'Cargando información del colaborador...',
+            );
           }
 
           return ListView(

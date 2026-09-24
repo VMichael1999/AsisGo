@@ -7,6 +7,7 @@ import 'core/security/security_service.dart';
 import 'core/services/location_service.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/storage_service.dart';
+import 'core/constants/app_colors.dart';
 import 'core/theme/app_theme.dart';
 import 'features/attendance_map/data/attendance_repository.dart';
 import 'features/attendance_map/data/branch_repository.dart';
@@ -17,6 +18,8 @@ import 'features/auth/presentation/cubit/auth_cubit.dart';
 import 'features/auth/presentation/cubit/auth_state.dart';
 import 'features/auth/presentation/views/login_view.dart';
 import 'features/calendar_history/presentation/cubit/calendar_cubit.dart';
+import 'core/widgets/asis_shimmer.dart';
+import 'core/widgets/asis_skeletons.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -110,8 +113,10 @@ class AsisGoApp extends StatelessWidget {
               }
               if (state is AuthLoading) {
                 return const Scaffold(
-                  body: Center(
-                    child: CircularProgressIndicator(),
+                  backgroundColor: AppColors.obsidianCanvas,
+                  body: AsisLoadingOverlay(
+                    skeleton: AsisLoginSkeleton(),
+                    message: 'Iniciando sesión en AsisGo...',
                   ),
                 );
               }
