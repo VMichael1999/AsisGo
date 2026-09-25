@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/services/connectivity_service.dart';
 import '../../../../core/services/haptic_feedback_service.dart';
 import '../../attendance_map/presentation/cubit/attendance_cubit.dart';
 import '../../attendance_map/presentation/cubit/attendance_state.dart';
-import '../../attendance_map/domain/shift_phase.dart';
 import '../../auth/presentation/cubit/auth_cubit.dart';
 import '../../auth/presentation/cubit/auth_state.dart';
 import '../../justifications/presentation/views/justifications_view.dart';
@@ -26,15 +24,6 @@ class _ProfileViewState extends State<ProfileView> {
   bool _shiftEndAlert = true;
   bool _liveActivityEnabled = true;
   bool _biometricLogin = true;
-  bool _hapticEnabled = true;
-  bool _soundEnabled = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _hapticEnabled = HapticFeedbackService.shared.isHapticEnabled;
-    _soundEnabled = HapticFeedbackService.shared.isSoundEnabled;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -190,7 +179,7 @@ class _ProfileViewState extends State<ProfileView> {
               ),
               const SizedBox(height: 16),
 
-              // Configuracion de notificaciones y recordatorios
+              // Configuración de notificaciones y recordatorios
               Card(
                 color: isDark ? const Color(0xFF131926) : Colors.white,
                 shape: RoundedRectangleBorder(
@@ -257,7 +246,7 @@ class _ProfileViewState extends State<ProfileView> {
               ),
               const SizedBox(height: 16),
 
-              // Configuracion de seguridad y biometria
+              // Configuración de seguridad y biometría
               Card(
                 color: isDark ? const Color(0xFF131926) : Colors.white,
                 shape: RoundedRectangleBorder(
@@ -294,37 +283,6 @@ class _ProfileViewState extends State<ProfileView> {
                         activeColor: AppColors.accent,
                         onChanged: (v) => setState(() => _biometricLogin = v),
                       ),
-                      Divider(height: 20, color: isDark ? const Color(0x22FFFFFF) : AppColors.borderLight),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF0F172A) : AppColors.backgroundLight,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: isDark ? const Color(0x22FFFFFF) : AppColors.borderLight),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.timer_outlined, size: 18, color: AppColors.indigoAccent),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Permanencia y seguridad de sesión',
-                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isDark ? Colors.white : AppColors.textPrimary),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'Cierre automático de seguridad por inactividad.',
-                                    style: TextStyle(fontSize: 11, color: isDark ? AppColors.textMuted : AppColors.textSecondary),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
                       const SizedBox(height: 10),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -347,7 +305,7 @@ class _ProfileViewState extends State<ProfileView> {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    'Detección estricta de suplantación de GPS.',
+                                    'Detección estricta de suplantación de GPS para garantizar la integridad.',
                                     style: TextStyle(fontSize: 11, color: isDark ? Colors.white70 : AppColors.textSecondary),
                                   ),
                                 ],
@@ -355,156 +313,6 @@ class _ProfileViewState extends State<ProfileView> {
                             ),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Configuracion de Feedback Háptico y Sonidos de Confirmación
-              Card(
-                color: isDark ? const Color(0xFF131926) : Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  side: BorderSide(
-                    color: isDark ? const Color(0x33FFFFFF) : AppColors.borderLight,
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.vibration_rounded, color: AppColors.accent, size: 20),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Feedback Háptico & Sonidos',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: isDark ? Colors.white : AppColors.textPrimary,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      SwitchListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(
-                          'Vibración Háptica Táctil',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: isDark ? Colors.white : AppColors.textPrimary,
-                          ),
-                        ),
-                        subtitle: Text(
-                          'Respuesta táctil física al pulsar botones y registrar asistencia',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: isDark ? AppColors.textMuted : AppColors.textSecondary,
-                          ),
-                        ),
-                        value: _hapticEnabled,
-                        activeColor: AppColors.accent,
-                        onChanged: (v) {
-                          setState(() => _hapticEnabled = v);
-                          HapticFeedbackService.shared.setHapticEnabled(v);
-                          if (v) {
-                            HapticFeedbackService.shared.selectionClick();
-                          }
-                        },
-                      ),
-                      SwitchListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(
-                          'Sonidos de Confirmación',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: isDark ? Colors.white : AppColors.textPrimary,
-                          ),
-                        ),
-                        subtitle: Text(
-                          'Efectos sonoros sutiles al confirmar marcaciones, alertas y sincronizaciones',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: isDark ? AppColors.textMuted : AppColors.textSecondary,
-                          ),
-                        ),
-                        value: _soundEnabled,
-                        activeColor: AppColors.accent,
-                        onChanged: (v) {
-                          setState(() => _soundEnabled = v);
-                          HapticFeedbackService.shared.setSoundEnabled(v);
-                          if (v) {
-                            HapticFeedbackService.shared.punchSuccess();
-                          }
-                        },
-                      ),
-                      Divider(height: 16, color: isDark ? const Color(0x22FFFFFF) : AppColors.borderLight),
-                      Text(
-                        'Probar respuestas sensoriales:',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.white70 : AppColors.textSecondary,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () {
-                                HapticFeedbackService.shared.punchSuccess();
-                              },
-                              icon: const Icon(Icons.check_circle_outline_rounded, size: 14, color: AppColors.checkInColor),
-                              label: const Text('Éxito', style: TextStyle(fontSize: 11)),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 8),
-                                side: BorderSide(color: AppColors.checkInColor.withValues(alpha: 0.5)),
-                                foregroundColor: AppColors.checkInColor,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () {
-                                HapticFeedbackService.shared.securityAlert();
-                              },
-                              icon: const Icon(Icons.warning_amber_rounded, size: 14, color: Color(0xFFEF4444)),
-                              label: const Text('Alerta', style: TextStyle(fontSize: 11)),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 8),
-                                side: BorderSide(color: const Color(0xFFEF4444).withValues(alpha: 0.5)),
-                                foregroundColor: const Color(0xFFEF4444),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () {
-                                HapticFeedbackService.shared.selectionClick();
-                              },
-                              icon: const Icon(Icons.touch_app_rounded, size: 14, color: AppColors.accent),
-                              label: const Text('Toque', style: TextStyle(fontSize: 11)),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 8),
-                                side: BorderSide(color: AppColors.accent.withValues(alpha: 0.5)),
-                                foregroundColor: AppColors.accent,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                              ),
-                            ),
-                          ),
-                        ],
                       ),
                     ],
                   ),
@@ -594,7 +402,7 @@ class _ProfileViewState extends State<ProfileView> {
               ),
               const SizedBox(height: 16),
 
-              // Configuracion de modo offline y sincronizacion automatica
+              // Sincronización de Marcaciones
               Card(
                 color: isDark ? const Color(0xFF131926) : Colors.white,
                 shape: RoundedRectangleBorder(
@@ -605,241 +413,204 @@ class _ProfileViewState extends State<ProfileView> {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.cloud_sync_rounded, color: AppColors.accent, size: 20),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Modo Offline & Sincronización',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: isDark ? Colors.white : AppColors.textPrimary,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      // Estado actual de conectividad
-                      Builder(builder: (context) {
-                        final connService = context.watch<ConnectivityService>();
-                        final isOnline = connService.isOnline;
-                        final isSimulated = connService.isSimulatedOffline;
+                  child: BlocBuilder<AttendanceCubit, AttendanceState>(
+                    builder: (context, attState) {
+                      final isLoaded = attState is AttendanceLoaded;
+                      final pendingCount = isLoaded ? attState.pendingSyncCount : 0;
+                      final isSyncing = isLoaded && attState.isSyncing;
+                      final isOffline = isLoaded && attState.isOffline;
 
-                        return Column(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                              decoration: BoxDecoration(
-                                color: isOnline
-                                    ? AppColors.accent.withValues(alpha: 0.1)
-                                    : const Color(0xFFF59E0B).withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: isOnline
-                                      ? AppColors.accent.withValues(alpha: 0.3)
-                                      : const Color(0xFFF59E0B).withValues(alpha: 0.35),
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    isOnline ? Icons.wifi_rounded : Icons.wifi_off_rounded,
-                                    size: 18,
-                                    color: isOnline ? AppColors.accent : const Color(0xFFF59E0B),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          isOnline ? 'Conexión activa con el servidor' : 'Modo fuera de línea activo',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w700,
-                                            color: isOnline ? AppColors.accent : const Color(0xFFF59E0B),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          isOnline
-                                              ? 'Las marcas se registran y sincronizan en tiempo real.'
-                                              : 'Las marcas se almacenan localmente y se enviarán al volver la red.',
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            color: isDark ? Colors.white70 : AppColors.textSecondary,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            SwitchListTile(
-                              contentPadding: EdgeInsets.zero,
-                              title: Text(
-                                'Simular Modo Sin Conexión (Testing)',
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.cloud_sync_rounded, color: AppColors.accent, size: 20),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Sincronización de Marcaciones',
                                 style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
                                   color: isDark ? Colors.white : AppColors.textPrimary,
                                 ),
                               ),
-                              subtitle: Text(
-                                'Permite validar la cola offline y auto-sincronización sin desconectar Wi-Fi',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: isDark ? AppColors.textMuted : AppColors.textSecondary,
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Si registraste tu asistencia sin conexión a internet, las marcas se sincronizan automáticamente al recuperar señal de red, o puedes sincronizarlas manualmente.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: isDark ? AppColors.textMuted : AppColors.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: pendingCount > 0
+                                  ? const Color(0xFFF59E0B).withValues(alpha: 0.12)
+                                  : const Color(0xFF10B981).withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: pendingCount > 0
+                                    ? const Color(0xFFF59E0B).withValues(alpha: 0.35)
+                                    : const Color(0xFF10B981).withValues(alpha: 0.35),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  pendingCount > 0 ? Icons.pending_actions_rounded : Icons.check_circle_rounded,
+                                  size: 20,
+                                  color: pendingCount > 0 ? const Color(0xFFF59E0B) : const Color(0xFF10B981),
                                 ),
-                              ),
-                              value: isSimulated,
-                              activeColor: const Color(0xFFF59E0B),
-                              onChanged: (v) {
-                                connService.setSimulatedOffline(v);
-                              },
-                            ),
-                            Divider(height: 16, color: isDark ? const Color(0x22FFFFFF) : AppColors.borderLight),
-                            Text(
-                              'Simular Fase de Turno (Live Activity & Dynamic Island)',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: isDark ? Colors.white : AppColors.textPrimary,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Prueba instantánea del color de Dynamic Island (Naranja en refrigerio, Verde en turno)',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: isDark ? AppColors.textMuted : AppColors.textSecondary,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            BlocBuilder<AttendanceCubit, AttendanceState>(
-                              builder: (context, attState) {
-                                final currentPhase = attState is AttendanceLoaded ? attState.currentPhase : ShiftPhase.notStarted;
-                                return Wrap(
-                                  spacing: 8,
-                                  runSpacing: 8,
-                                  children: [
-                                    _buildPhaseChip(
-                                      context,
-                                      label: 'En Turno',
-                                      phase: ShiftPhase.working,
-                                      selected: currentPhase == ShiftPhase.working,
-                                      color: const Color(0xFF10B981),
-                                    ),
-                                    _buildPhaseChip(
-                                      context,
-                                      label: 'Refrigerio',
-                                      phase: ShiftPhase.onLunch,
-                                      selected: currentPhase == ShiftPhase.onLunch,
-                                      color: Colors.orange,
-                                    ),
-                                    _buildPhaseChip(
-                                      context,
-                                      label: 'Reanudada',
-                                      phase: ShiftPhase.resumed,
-                                      selected: currentPhase == ShiftPhase.resumed,
-                                      color: const Color(0xFF10B981),
-                                    ),
-                                    _buildPhaseChip(
-                                      context,
-                                      label: 'Finalizada',
-                                      phase: ShiftPhase.completed,
-                                      selected: currentPhase == ShiftPhase.completed,
-                                      color: const Color(0xFF059669),
-                                    ),
-                                  ],
-                                );
-                              },
-                            ),
-                          ],
-                        );
-                      }),
-                      // Estado de marcas pendientes
-                      BlocBuilder<AttendanceCubit, AttendanceState>(
-                        builder: (context, state) {
-                          if (state is! AttendanceLoaded) return const SizedBox.shrink();
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Divider(height: 16, color: isDark ? const Color(0x22FFFFFF) : AppColors.borderLight),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Column(
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Marcas pendientes de envío',
+                                        pendingCount > 0
+                                            ? '$pendingCount marcación(es) pendiente(s)'
+                                            : 'Marcaciones al día',
                                         style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                          color: isDark ? Colors.white : AppColors.textPrimary,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w700,
+                                          color: pendingCount > 0 ? const Color(0xFFF59E0B) : const Color(0xFF10B981),
                                         ),
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
-                                        '${state.pendingSyncCount} registro(s) en cola local',
+                                        pendingCount > 0
+                                            ? 'Guardadas de manera local en el teléfono. Pendientes de envío.'
+                                            : 'Todas las marcas están sincronizadas con el servidor.',
                                         style: TextStyle(
                                           fontSize: 11,
-                                          color: isDark ? AppColors.textMuted : AppColors.textSecondary,
+                                          color: isDark ? Colors.white70 : AppColors.textSecondary,
                                         ),
                                       ),
                                     ],
                                   ),
-                                  if (state.pendingSyncCount > 0)
-                                    ElevatedButton.icon(
-                                      onPressed: state.isSyncing
-                                          ? null
-                                          : () => context.read<AttendanceCubit>().syncPendingNow(),
-                                      icon: state.isSyncing
-                                          ? const SizedBox(
-                                              width: 14,
-                                              height: 14,
-                                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                                            )
-                                          : const Icon(Icons.sync_rounded, size: 16),
-                                      label: Text(state.isSyncing ? 'Sincronizando...' : 'Sincronizar'),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppColors.accent,
-                                        foregroundColor: Colors.white,
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                      ),
-                                    ),
-                                ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: isSyncing
+                                  ? null
+                                  : () async {
+                                      HapticFeedbackService.shared.selectionClick();
+                                      if (isOffline) {
+                                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: const Row(
+                                              children: [
+                                                Icon(Icons.wifi_off_rounded, color: Color(0xFFF59E0B), size: 20),
+                                                SizedBox(width: 10),
+                                                Expanded(
+                                                  child: Text(
+                                                    'Sin conexión a internet. Conéctate a Wi-Fi o datos para sincronizar.',
+                                                    style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            backgroundColor: const Color(0xFF0F172A),
+                                            duration: const Duration(seconds: 3),
+                                            behavior: SnackBarBehavior.floating,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(14),
+                                              side: const BorderSide(color: Color(0xFFF59E0B), width: 1.2),
+                                            ),
+                                          ),
+                                        );
+                                        return;
+                                      }
+                                      if (pendingCount == 0) {
+                                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: const Row(
+                                              children: [
+                                                Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 20),
+                                                SizedBox(width: 10),
+                                                Expanded(
+                                                  child: Text(
+                                                    'Todas tus marcaciones ya están sincronizadas.',
+                                                    style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            backgroundColor: const Color(0xFF0F172A),
+                                            duration: const Duration(seconds: 2),
+                                            behavior: SnackBarBehavior.floating,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(14),
+                                              side: const BorderSide(color: Color(0xFF10B981), width: 1.2),
+                                            ),
+                                          ),
+                                        );
+                                        return;
+                                      }
+                                      await context.read<AttendanceCubit>().syncPendingNow();
+                                    },
+                              icon: isSyncing
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                    )
+                                  : const Icon(Icons.sync_rounded, size: 18),
+                              label: Text(
+                                isSyncing ? 'Sincronizando marcaciones...' : 'Sincronizar Marcaciones',
+                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
                               ),
-                            ],
-                          );
-                        },
-                      ),
-                    ],
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.accent,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ),
               ),
               const SizedBox(height: 24),
 
-              // Boton para cerrar sesion
-              OutlinedButton.icon(
-                onPressed: () => context.read<AuthCubit>().logout(),
-                icon: const Icon(Icons.logout_rounded, color: AppColors.checkOutColor),
-                label: const Text(
-                  'Cerrar Sesión',
-                  style: TextStyle(color: AppColors.checkOutColor, fontWeight: FontWeight.w700),
-                ),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  side: const BorderSide(color: Color(0xFFEF4444)),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              // Botón para cerrar sesión (Fondo rojo sólido y letras blancas)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => context.read<AuthCubit>().logout(),
+                  icon: const Icon(Icons.logout_rounded, color: Colors.white, size: 20),
+                  label: const Text(
+                    'Cerrar Sesión',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFDC2626), // Rojo empresarial sólido
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -875,58 +646,6 @@ class _ProfileViewState extends State<ProfileView> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildPhaseChip(
-    BuildContext context, {
-    required String label,
-    required ShiftPhase phase,
-    required bool selected,
-    required Color color,
-  }) {
-    return ActionChip(
-      avatar: CircleAvatar(
-        radius: 4,
-        backgroundColor: color,
-      ),
-      label: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: selected ? FontWeight.bold : FontWeight.normal,
-          color: selected ? Colors.white : color,
-        ),
-      ),
-      backgroundColor: selected ? color.withValues(alpha: 0.85) : color.withValues(alpha: 0.12),
-      side: BorderSide(
-        color: selected ? color : color.withValues(alpha: 0.4),
-        width: selected ? 1.5 : 1.0,
-      ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      onPressed: () {
-        context.read<AttendanceCubit>().simulatePhaseForDemo(phase);
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Fase simulada: $label actualizada en Dynamic Island',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            backgroundColor: const Color(0xFF0F172A),
-            duration: const Duration(seconds: 2),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-              side: const BorderSide(color: Color(0xFF334155), width: 1),
-            ),
-          ),
-        );
-      },
     );
   }
 }
