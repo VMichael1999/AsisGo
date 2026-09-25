@@ -38,6 +38,44 @@ class AttendanceRecord extends Equatable {
     this.isSynced = true,
   });
 
+  AttendanceRecord copyWith({
+    String? id,
+    String? userId,
+    AttendanceType? type,
+    DateTime? timestamp,
+    String? branchId,
+    String? branchName,
+    String? geozoneId,
+    String? geozoneName,
+    double? latitude,
+    double? longitude,
+    double? distanceToGeozone,
+    bool? isInsideGeozone,
+    bool? isMockedLocation,
+    String? note,
+    String? selfiePath,
+    bool? isSynced,
+  }) {
+    return AttendanceRecord(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      type: type ?? this.type,
+      timestamp: timestamp ?? this.timestamp,
+      branchId: branchId ?? this.branchId,
+      branchName: branchName ?? this.branchName,
+      geozoneId: geozoneId ?? this.geozoneId,
+      geozoneName: geozoneName ?? this.geozoneName,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      distanceToGeozone: distanceToGeozone ?? this.distanceToGeozone,
+      isInsideGeozone: isInsideGeozone ?? this.isInsideGeozone,
+      isMockedLocation: isMockedLocation ?? this.isMockedLocation,
+      note: note ?? this.note,
+      selfiePath: selfiePath ?? this.selfiePath,
+      isSynced: isSynced ?? this.isSynced,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,

@@ -26,7 +26,14 @@ abstract class IAttendanceRepository {
     bool isMockedLocation = false,
     String? note,
     String? selfiePath,
+    bool isSynced = true,
   });
+
+  Future<List<AttendanceRecord>> getPendingSyncRecords(String userId);
+
+  Future<int> getPendingSyncCount(String userId);
+
+  Future<int> syncPendingRecords(String userId);
 
   Future<void> clearAll();
 }

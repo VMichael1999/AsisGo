@@ -65,6 +65,18 @@ class AttendanceRepository implements IAttendanceRepository {
       ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
   }
 
+  /// Reemplaza las marcas de hoy para pruebas y demostraciones en vivo
+  Future<void> setTodayRecordsForDemo(List<AttendanceRecord> records) async {
+    await init();
+    final now = DateTime.now();
+    _cachedRecords.removeWhere((r) =>
+        r.timestamp.year == now.year &&
+        r.timestamp.month == now.month &&
+        r.timestamp.day == now.day);
+    _cachedRecords.addAll(records);
+    await _persist();
+  }
+
   @override
   Future<ShiftPhase> getCurrentShiftPhase(String userId) async {
     final todayRecords = await getTodayRecords(userId);
@@ -105,6 +117,7 @@ class AttendanceRepository implements IAttendanceRepository {
     bool isMockedLocation = false,
     String? note,
     String? selfiePath,
+    bool isSynced = true,
   }) async {
     await init();
     final record = AttendanceRecord(
@@ -123,12 +136,50 @@ class AttendanceRepository implements IAttendanceRepository {
       isMockedLocation: isMockedLocation,
       note: note,
       selfiePath: selfiePath,
-      isSynced: true,
+      isSynced: isSynced,
     );
 
     _cachedRecords.add(record);
     await _persist();
     return record;
+  }
+
+  @override
+  Future<List<AttendanceRecord>> getPendingSyncRecords(String userId) async {
+    await init();
+    return _cachedRecords
+        .where((r) => r.userId == userId && !r.isSynced)
+        .toList()
+      ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+  }
+
+  @override
+  Future<int> getPendingSyncCount(String userId) async {
+    await init();
+    return _cachedRecords.where((r) => r.userId == userId && !r.isSynced).length;
+  }
+
+  @override
+  Future<int> syncPendingRecords(String userId) async {
+    await init();
+    final pendingIndices = <int>[];
+    for (int i = 0; i < _cachedRecords.length; i++) {
+      if (_cachedRecords[i].userId == userId && !_cachedRecords[i].isSynced) {
+        pendingIndices.add(i);
+      }
+    }
+
+    if (pendingIndices.isEmpty) return 0;
+
+    // Simular envío batch seguro a endpoints de telemetría corporativa
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    for (final index in pendingIndices) {
+      _cachedRecords[index] = _cachedRecords[index].copyWith(isSynced: true);
+    }
+
+    await _persist();
+    return pendingIndices.length;
   }
 
   List<AttendanceRecord> _generateInitialHistory() {
