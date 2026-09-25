@@ -97,4 +97,41 @@ class StorageService implements IStorageService {
     return _prefs.getBool(AppConstants.keyMockProtectionEnabled) ??
         AppSecurityConfig.defaultMockProtection;
   }
+
+  // --- Feedback Háptico & Sonidos de Confirmación ---
+  @override
+  Future<void> setHapticEnabled(bool enabled) async {
+    await _prefs.setBool(AppConstants.keyHapticEnabled, enabled);
+  }
+
+  @override
+  bool isHapticEnabled() {
+    return _prefs.getBool(AppConstants.keyHapticEnabled) ?? true;
+  }
+
+  @override
+  Future<void> setSoundEnabled(bool enabled) async {
+    await _prefs.setBool(AppConstants.keySoundEnabled, enabled);
+  }
+
+  @override
+  bool isSoundEnabled() {
+    return _prefs.getBool(AppConstants.keySoundEnabled) ?? true;
+  }
+
+  // --- Justificaciones de Incidencias Laborales ---
+  Future<void> saveJustifications(List<Map<String, dynamic>> list) async {
+    await _prefs.setString('key_saved_justifications', jsonEncode(list));
+  }
+
+  List<Map<String, dynamic>> getJustifications() {
+    final raw = _prefs.getString('key_saved_justifications');
+    if (raw == null) return [];
+    try {
+      final list = jsonDecode(raw) as List;
+      return list.map((item) => item as Map<String, dynamic>).toList();
+    } catch (_) {
+      return [];
+    }
+  }
 }

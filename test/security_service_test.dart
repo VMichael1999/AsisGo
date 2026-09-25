@@ -50,6 +50,18 @@ class FakeStorageService implements IStorageService {
 
   @override
   Future<void> setNotificationsEnabled(bool enabled) async {}
+
+  @override
+  bool isHapticEnabled() => true;
+
+  @override
+  Future<void> setHapticEnabled(bool enabled) async {}
+
+  @override
+  bool isSoundEnabled() => true;
+
+  @override
+  Future<void> setSoundEnabled(bool enabled) async {}
 }
 
 void main() {

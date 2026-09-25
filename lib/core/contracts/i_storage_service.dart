@@ -17,4 +17,10 @@ abstract class IStorageService {
 
   Future<void> setMockProtectionEnabled(bool enabled);
   bool isMockProtectionEnabled();
+
+  Future<void> setHapticEnabled(bool enabled);
+  bool isHapticEnabled();
+
+  Future<void> setSoundEnabled(bool enabled);
+  bool isSoundEnabled();
 }

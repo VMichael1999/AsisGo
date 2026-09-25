@@ -9,6 +9,8 @@ class AppConstants {
   static const String keyBiometricEnabled = 'asisgo_biometric_enabled';
   static const String keyNotificationsEnabled = 'asisgo_notifications_enabled';
   static const String keyMockProtectionEnabled = 'asisgo_mock_protection_enabled';
+  static const String keyHapticEnabled = 'asisgo_haptic_enabled';
+  static const String keySoundEnabled = 'asisgo_sound_enabled';
 
   // Seguridad y tiempo de expiracion de sesion
   static const int sessionTimeoutMinutes = 10;
