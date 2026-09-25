@@ -48,12 +48,25 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>AsisGo requiere acceso a tu ubicación para validar la presencia dentro de la geozona de la empresa al registrar asistencia.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>AsisGo requiere acceso a la ubicación para registrar tu asistencia en las sucursales autorizadas.</string>
+	<string>AsisGo requiere acceso continuo a la ubicación para validar en tiempo real si te encuentras dentro o fuera de la geozona asignada durante tu jornada laboral.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>AsisGo requiere acceso a la ubicación en segundo plano para actualizar el estado de geozona en la Isla Dinámica de tu turno de trabajo.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>AsisGo optimiza el seguimiento de geozona para la marcación y validación de asistencia.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+		<string>fetch</string>
+	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>AsisGo requiere acceso a la cámara para tomar una foto de validación facial al marcar tu asistencia.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>AsisGo requiere acceso a la galería para adjuntar comprobantes o fotografías de asistencia.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>AsisGo utiliza Face ID para iniciar sesión de manera rápida y segura.</string>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
+	<key>NSSupportsLiveActivitiesFrequentUpdates</key>
+	<true/>
 </dict>
 </plist>
