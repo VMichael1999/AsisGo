@@ -8,6 +8,9 @@ import 'package:asisgo/features/attendance_map/domain/shift_phase.dart';
 import 'package:asisgo/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:asisgo/features/calendar_history/presentation/cubit/calendar_cubit.dart';
 import 'package:asisgo/features/calendar_history/presentation/cubit/calendar_state.dart';
+import 'package:asisgo/features/justifications/presentation/views/justifications_view.dart';
+import 'package:asisgo/features/justifications/presentation/widgets/new_justification_sheet.dart';
+import 'package:asisgo/core/services/haptic_feedback_service.dart';
 import 'package:asisgo/core/widgets/asis_shimmer.dart';
 import 'package:asisgo/core/widgets/asis_skeletons.dart';
 
@@ -42,6 +45,14 @@ class _CalendarHistoryViewState extends State<CalendarHistoryView> {
         backgroundColor: isDark ? AppColors.obsidianCanvas : Colors.white,
         elevation: 0,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.assignment_turned_in_rounded),
+            tooltip: 'Mis Justificaciones',
+            onPressed: () {
+              HapticFeedbackService.shared.selectionClick();
+              Navigator.push(context, JustificationsView.route());
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
             tooltip: 'Actualizar',
@@ -89,7 +100,70 @@ class _CalendarHistoryViewState extends State<CalendarHistoryView> {
               children: [
                 // Tarjetas de resumen de metricas clave (horas trabajadas, dias, puntualidad)
                 _buildMetricsHeader(calendarData, isDark),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
+
+                // Banner de Justificación de Incidencias Laborales
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF131926) : Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: isDark ? const Color(0x33FFFFFF) : AppColors.borderLight,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.assignment_late_rounded, color: Color(0xFFF59E0B), size: 20),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '¿Tardanza o inasistencia?',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: isDark ? Colors.white : AppColors.textPrimary,
+                              ),
+                            ),
+                            Text(
+                              'Envía tu sustento con comprobante adjunto a RRHH',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: isDark ? AppColors.textMuted : AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          HapticFeedbackService.shared.selectionClick();
+                          NewJustificationSheet.show(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFF59E0B),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: const Text('Justificar', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
 
                 // Tarjeta interactiva del calendario mensual
                 Card(
