@@ -35,20 +35,21 @@ AsisGo es una solución móvil de nivel empresarial desarrollada en Flutter para
 - Badges dinámicos con tonalidades Obsidian y Emerald: estado de permanencia en geocerca (`Dentro de Geocerca` / `Fuera de Geocerca`) y fase de turno (`Turno de Trabajo` / `Refrigerio`).
 - Integración con el sistema mediante botón de acción directo (`Abrir AsisGo`) que devuelve al usuario al contexto exacto de su jornada.
 
-### 3. Modo Offline Automático y Sincronización Bidireccional
-- **Detección de Conectividad en Tiempo Real:** Monitoreo activo de interfaces de red con capacidad de simulación de desconexión para pruebas de campo.
-- **Cola Local Persistente:** Cuando el dispositivo pierde conectividad o ingresa a zonas de baja cobertura (sótanos, plantas industriales), las marcaciones se almacenan localmente con el indicador `isSynced = false`.
-- **Auto-Sync:** Al restablecerse la conexión a Internet, el servicio sincroniza automáticamente los registros en cola sin requerir intervención manual del colaborador, emitiendo retroalimentación visual y háptica.
+### 3. Modo Offline Automático y Sincronización de Marcaciones
+- **Operación Natural sin Conexión:** Si el colaborador se encuentra sin internet (sin Wi-Fi o datos móviles), el sistema permite registrar la asistencia normalmente.
+- **Cola Local Persistente:** La marcación se almacena de forma segura en la base de datos local del dispositivo con estado pendiente de sincronización (`isSynced = false`).
+- **Auto-Sync al Reconectar:** Apenas el dispositivo vuelve a tener señal de internet, el servicio despacha y sincroniza automáticamente las marcas pendientes con el servidor.
+- **Botón de Sincronización Manual:** En la sección "Mi Perfil", el colaborador dispone del botón **"Sincronizar Marcaciones"** para consultar el estado de sus marcas y enviarlas manualmente cuando lo requiera.
 
-### 4. Módulo de Justificaciones e Incidencias Laborales
+### 4. Sesión Perenne y Continuidad de Servicio
+- **Autenticación Continua:** La sesión del colaborador permanece abierta de forma perenne. El aplicativo no cierra sesión de forma automática, garantizando que el usuario pueda registrar asistencia al instante y sin retrasos.
+- **Persistencia en Segundo Plano:** Al cerrar o enviar la app a segundo plano, las Live Activities en la Dynamic Island (iOS) y la notificación en tiempo real (Android) continúan activas durante toda la jornada laboral.
+
+### 5. Módulo de Justificaciones e Incidencias Laborales
 - Gestión completa de incidencias y justificaciones vinculadas al historial de asistencia.
 - Categorización de solicitudes: Permiso médico, Cita médica, Fallas técnicas/dispositivo, Falta injustificada, Comisión de servicios y Asuntos particulares.
 - Selector de fecha, registro detallado de motivos y soporte para adjuntos fotográficos y documentales (JPG, PNG, PDF).
 - Visor integrado de documentos adjuntos con interfaz modal y zoom.
-
-### 5. Sistema de Feedback Háptico y Sensorial
-- Servicio centralizado de vibraciones táctiles (`HapticFeedbackService`): respuestas hápticas diferenciadas para marcaciones exitosas, transiciones de turno, sincronización en segundo plano y alertas de seguridad.
-- Retroalimentación auditiva sutil y configurable desde las preferencias de perfil del colaborador.
 
 ### 6. Seguridad Avanzada y Detección Anti-Fake GPS
 - Verificación de telemetría de hardware en tiempo de ejecución para identificar proveedores simulados (Mock Providers), aplicaciones de falseo de ubicación y anomalías en la precisión de señal satelital.
@@ -74,12 +75,7 @@ El sistema implementa una estructura de datos normalizada para organizaciones co
   4. Salida de jornada (`checkOut` o salida anticipada)
 - Modal simplificado de asistencia diseñado para registro rápido: cálculo geodésico Haversine de proximidad, verificación facial mediante selfie frontal y campo opcional para notas operativas.
 
-### 10. Temporizador de Seguridad y Expiración de Sesión
-- Cierre preventivo de sesión tras 10 minutos de permanencia en el sistema para resguardar la identidad del colaborador.
-- Interfaz no intrusiva: despliegue de diálogo modal con fondo difuminado sobre la vista de mapa activa, informando de la expiración sin cierres abruptos.
-- Redirección controlada a la pantalla de autenticación para nuevo ingreso manual de credenciales o biometría.
-
-### 11. Historial de Asistencia y Calendario de Auditoría
+### 10. Historial de Asistencia y Calendario de Auditoría
 - Resumen mensual de métricas clave (horas efectivas laboradas, días asistidos y porcentaje global de puntualidad con tolerancia de entrada).
 - Vista de pestañas integradas para alternar entre "Historial de Marcas" y "Justificaciones".
 
@@ -92,7 +88,7 @@ El proyecto sigue una arquitectura desacoplada basada en Clean Architecture y el
 ```
 lib/
 ├── app/
-│   └── main_navigation_shell.dart         # Contenedor de navegación principal y escucha de expiración
+│   └── main_navigation_shell.dart         # Contenedor de navegación principal y escucha de estados
 ├── core/
 │   ├── constants/
 │   │   ├── app_colors.dart                # Paleta de color corporativa y diseño medianoche
@@ -105,14 +101,14 @@ lib/
 │   ├── security/
 │   │   ├── security_service.dart          # Lógica de detección de proveedores simulados
 │   │   ├── security_check_result.dart     # Modelo de dictamen de integridad
-│   │   └── session_timer_manager.dart     # Gestor del temporizador de inactividad
+│   │   └── session_timer_manager.dart     # Gestor del temporizador de sesión
 │   ├── services/
-│   │   ├── connectivity_service.dart      # Monitoreo de conectividad y simulación offline
-│   │   ├── haptic_feedback_service.dart   # Centralización de vibración y sonido háptico
+│   │   ├── connectivity_service.dart      # Monitoreo de conectividad real del dispositivo
+│   │   ├── haptic_feedback_service.dart   # Respuestas táctiles del sistema
 │   │   ├── live_activity_service.dart     # Enlace MethodChannel con iOS ActivityKit
 │   │   ├── location_service.dart          # Transmisión GPS y fórmulas geodésicas Haversine
 │   │   ├── notification_service.dart      # Notificaciones locales en vivo (Android RemoteViews)
-│   │   ├── offline_sync_service.dart      # Gestión de cola y auto-sincronización
+│   │   ├── offline_sync_service.dart      # Gestión de cola y auto-sincronización al detectar red
 │   │   └── storage_service.dart           # Persistencia local mediante SharedPreferences
 │   ├── theme/
 │   │   └── app_theme.dart                 # Configuración de temas claro y medianoche oscuro
@@ -122,7 +118,7 @@ lib/
 │       ├── asis_action_button.dart        # Botón con soporte de estados y temas de alto contraste
 │       ├── asis_glass_card.dart           # Componente de tarjeta con efecto frosted glass
 │       ├── asis_security_dialog.dart      # Diálogo modal de alerta de suplantación GPS
-│       └── asis_session_expired_dialog.dart # Diálogo modal de expiración de sesión
+│       └── asis_session_expired_dialog.dart # Diálogo modal de sesión
 └── features/
     ├── attendance_map/
     │   ├── data/
@@ -151,7 +147,7 @@ lib/
     │       ├── views/                         # Lista de justificaciones y visor de adjuntos
     │       └── widgets/                       # Formulario modal de nueva justificación
     └── profile/
-        └── views/profile_view.dart        # Vista de perfil, configuración y simulación de turnos
+        └── views/profile_view.dart        # Vista de perfil, horario y sincronización manual
 ```
 
 ---
@@ -162,7 +158,7 @@ lib/
 - Ubicación: `ios/AsisGoWidgets/`
 - Archivos clave:
   - `AsisGoWidgetsBundle.swift`: Punto de entrada del bundle de widgets.
-  - `AsisGoWidgetsLiveActivity.swift`: Definición de vistas para Dynamic Island (compactTrailing, compactLeading, minimal, expanded) y Lock Screen banner.
+  - `ShiftLiveActivityWidget.swift`: Definición de vistas para Dynamic Island (compactTrailing, compactLeading, minimal, expanded) y Lock Screen banner.
   - `AsisGoWidgets.swift`: Atributos y estado de contenido de Live Activity (`AsisGoLiveActivityAttributes`).
 
 ### Android (RemoteViews & Foreground Service)
