@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../core/constants/app_colors.dart';
+import '../core/services/haptic_feedback_service.dart';
 import '../core/widgets/asis_session_expired_dialog.dart';
 import '../features/attendance_map/presentation/views/branches_view.dart';
 import '../features/attendance_map/presentation/views/map_home_view.dart';
@@ -63,7 +64,6 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
         }
       },
       child: Scaffold(
-        backgroundColor: AppColors.obsidianCanvas,
         body: IndexedStack(
           index: _currentIndex,
           children: _screens,
@@ -93,6 +93,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                 child: NavigationBar(
                   selectedIndex: _currentIndex,
                   onDestinationSelected: (index) {
+                    HapticFeedbackService.shared.selectionClick();
                     setState(() => _currentIndex = index);
                     if (index == 1) {
                       // Recargar datos del calendario al cambiar de pestana

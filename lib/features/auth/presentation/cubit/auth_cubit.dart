@@ -1,5 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/security/session_timer_manager.dart';
+import '../../../../core/services/notification_service.dart';
+import '../../../../core/services/live_activity_service.dart';
 import '../../data/auth_repository.dart';
 import 'auth_state.dart';
 
@@ -17,9 +19,11 @@ class AuthCubit extends Cubit<AuthState> {
         _startSessionTimer();
         emit(Authenticated(user));
       } else {
+        await LiveActivityService().endShiftActivity();
         emit(const Unauthenticated());
       }
     } catch (e) {
+      await LiveActivityService().endShiftActivity();
       emit(const Unauthenticated());
     }
   }
@@ -50,13 +54,13 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   void _startSessionTimer() {
-    _sessionTimer.startSession(() {
-      expireSession();
-    });
+    // Sesión perenne sin expiración automática de tiempo por inactividad
   }
 
   Future<void> expireSession() async {
     _sessionTimer.cancel();
+    await NotificationService().cancelShiftNotification();
+    await LiveActivityService().endShiftActivity();
     final currentState = state;
     if (currentState is Authenticated) {
       emit(AuthSessionExpired(
@@ -74,6 +78,8 @@ class AuthCubit extends Cubit<AuthState> {
 
   Future<void> confirmLogoutAfterExpiration() async {
     _sessionTimer.cancel();
+    await NotificationService().cancelShiftNotification();
+    await LiveActivityService().endShiftActivity();
     await _authRepository.logout();
     emit(const Unauthenticated(
       'El inicio de sesión ha expirado, vuelve a iniciar sesión nuevamente.',
@@ -82,6 +88,8 @@ class AuthCubit extends Cubit<AuthState> {
 
   Future<void> logout() async {
     _sessionTimer.cancel();
+    await NotificationService().cancelShiftNotification();
+    await LiveActivityService().endShiftActivity();
     emit(AuthLoading());
     await _authRepository.logout();
     emit(const Unauthenticated());

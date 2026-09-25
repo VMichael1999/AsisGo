@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/services/haptic_feedback_service.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/widgets/asis_glass_card.dart';
 import '../../../../core/widgets/asis_security_dialog.dart';
@@ -18,6 +19,7 @@ import '../../../auth/presentation/cubit/auth_state.dart';
 import '../widgets/attendance_action_dock.dart';
 import '../widgets/attendance_modal_sheet.dart';
 import '../widgets/geozone_status_badge.dart';
+import '../widgets/offline_status_badge.dart';
 import 'package:asisgo/features/calendar_history/presentation/cubit/calendar_cubit.dart';
 import '../../../../core/widgets/asis_shimmer.dart';
 import '../../../../core/widgets/asis_skeletons.dart';
@@ -61,6 +63,7 @@ class _MapHomeViewState extends State<MapHomeView> {
     required AttendanceType type,
     required LocationLoaded locationState,
     required String userId,
+    bool isOffline = false,
   }) {
     AttendanceModalSheet.show(
       context: context,
@@ -69,6 +72,7 @@ class _MapHomeViewState extends State<MapHomeView> {
       geozone: locationState.currentGeozone,
       distanceMeters: locationState.distanceMeters,
       isInside: locationState.isInsideGeozone,
+      isOffline: isOffline,
       onConfirm: (note, selfiePath) {
         context.read<AttendanceCubit>().registerPunch(
               userId: userId,
@@ -90,6 +94,7 @@ class _MapHomeViewState extends State<MapHomeView> {
   }
 
   void _showMockGpsSecurityDialog(BuildContext context, LocationLoaded loc) {
+    HapticFeedbackService.shared.securityAlert();
     AsisSecurityDialog.show(
       context: context,
       type: AsisSecurityDialogType.mockGpsDetected,
@@ -111,6 +116,7 @@ class _MapHomeViewState extends State<MapHomeView> {
     LocationLoaded loc,
     AttendanceType type,
   ) {
+    HapticFeedbackService.shared.securityAlert();
     AsisSecurityDialog.show(
       context: context,
       type: AsisSecurityDialogType.outsideGeozone,
@@ -142,26 +148,61 @@ class _MapHomeViewState extends State<MapHomeView> {
             // Sincronizar el historial de calendario con las marcas registradas
             context.read<CalendarCubit>().loadCalendarData(userId);
 
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Row(
                   children: [
-                    const Icon(Icons.check_circle_outline_rounded, color: Colors.white),
-                    const SizedBox(width: 8),
-                    Expanded(child: Text(attendanceState.feedbackMessage!)),
+                    const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 22),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        attendanceState.feedbackMessage!,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
-                backgroundColor: AppColors.primary,
+                backgroundColor: const Color(0xFF0F172A),
                 behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 6,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  side: const BorderSide(color: Color(0xFF10B981), width: 1.2),
+                ),
               ),
             );
           } else if (attendanceState is AttendanceError) {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(attendanceState.message),
-                backgroundColor: AppColors.checkOutColor,
+                content: Row(
+                  children: [
+                    const Icon(Icons.error_outline_rounded, color: Color(0xFFEF4444), size: 22),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        attendanceState.message,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                backgroundColor: const Color(0xFF0F172A),
                 behavior: SnackBarBehavior.floating,
+                elevation: 6,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  side: const BorderSide(color: Color(0xFFEF4444), width: 1.2),
+                ),
               ),
             );
           }
@@ -170,6 +211,11 @@ class _MapHomeViewState extends State<MapHomeView> {
           return BlocConsumer<LocationCubit, LocationState>(
             listener: (context, locationState) {
               if (locationState is LocationLoaded) {
+                // Notificar cambio de estado de geozona a la Live Activity de la Dynamic Island
+                context.read<AttendanceCubit>().updateGeozoneStatus(
+                      isInsideGeozone: locationState.isInsideGeozone,
+                    );
+
                 if (_lastIsolatedBranchId != locationState.isolatedBranchId) {
                   _lastIsolatedBranchId = locationState.isolatedBranchId;
                   if (locationState.activeMapBranch.geozones.isNotEmpty) {
@@ -437,17 +483,29 @@ class _MapHomeViewState extends State<MapHomeView> {
                     ),
                   ),
 
-                  // Capsula flotante superior con estado de geozona
+                  // Capsula flotante superior con estado de geozona y modo offline
                   SafeArea(
                     child: Align(
                       alignment: Alignment.topCenter,
-                      child: GeozoneStatusBadge(
-                        isInside: loc.isInsideGeozone,
-                        distanceMeters: loc.distanceMeters,
-                        branch: loc.currentBranch,
-                        geozone: loc.currentGeozone,
-                        isMocked: loc.isMocked,
-                        isMockProtectionActive: loc.isMockProtectionActive,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          GeozoneStatusBadge(
+                            isInside: loc.isInsideGeozone,
+                            distanceMeters: loc.distanceMeters,
+                            branch: loc.currentBranch,
+                            geozone: loc.currentGeozone,
+                            isMocked: loc.isMocked,
+                            isMockProtectionActive: loc.isMockProtectionActive,
+                          ),
+                          if (attendanceState is AttendanceLoaded)
+                            OfflineStatusBadge(
+                              isOffline: attendanceState.isOffline,
+                              pendingSyncCount: attendanceState.pendingSyncCount,
+                              isSyncing: attendanceState.isSyncing,
+                              onSyncTap: () => context.read<AttendanceCubit>().syncPendingNow(),
+                            ),
+                        ],
                       ),
                     ),
                   ),
@@ -468,6 +526,7 @@ class _MapHomeViewState extends State<MapHomeView> {
                           icon: const Icon(Icons.chevron_left_rounded, color: Colors.white, size: 30),
                           tooltip: 'Sede anterior de ${loc.selectedCompany.shortName}',
                           onPressed: () {
+                            HapticFeedbackService.shared.selectionClick();
                             final cubit = context.read<LocationCubit>();
                             cubit.previousBranch();
                             final updated = cubit.state;
@@ -493,6 +552,7 @@ class _MapHomeViewState extends State<MapHomeView> {
                           icon: const Icon(Icons.chevron_right_rounded, color: Colors.white, size: 30),
                           tooltip: 'Siguiente sede de ${loc.selectedCompany.shortName}',
                           onPressed: () {
+                            HapticFeedbackService.shared.selectionClick();
                             final cubit = context.read<LocationCubit>();
                             cubit.nextBranch();
                             final updated = cubit.state;
@@ -661,11 +721,33 @@ class _MapHomeViewState extends State<MapHomeView> {
                             tooltip: 'Sincronizar Ubicación GPS',
                             onTap: () {
                               context.read<LocationCubit>().syncDeviceLocation();
+                              ScaffoldMessenger.of(context).hideCurrentSnackBar();
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Ubicación GPS sincronizada en tiempo real'),
-                                  duration: Duration(seconds: 2),
+                                SnackBar(
+                                  content: const Row(
+                                    children: [
+                                      Icon(Icons.gps_fixed_rounded, color: Color(0xFF38BDF8), size: 20),
+                                      SizedBox(width: 10),
+                                      Expanded(
+                                        child: Text(
+                                          'Ubicación GPS sincronizada en tiempo real',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  backgroundColor: const Color(0xFF0F172A),
+                                  duration: const Duration(seconds: 2),
                                   behavior: SnackBarBehavior.floating,
+                                  elevation: 6,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                    side: const BorderSide(color: Color(0xFF334155), width: 1),
+                                  ),
                                 ),
                               );
                             },
@@ -712,11 +794,13 @@ class _MapHomeViewState extends State<MapHomeView> {
                           }
 
                           // Apertura del modal simplificado de asistencia
+                          final isOffline = attendanceState is AttendanceLoaded && attendanceState.isOffline;
                           _openAttendanceModal(
                             context: context,
                             type: nextType,
                             locationState: loc,
                             userId: userId,
+                            isOffline: isOffline,
                           );
                         },
                         onSecondaryActionPressed: () {
@@ -737,11 +821,13 @@ class _MapHomeViewState extends State<MapHomeView> {
                           }
 
                           // Apertura del modal para salida anticipada
+                          final isOffline = attendanceState is AttendanceLoaded && attendanceState.isOffline;
                           _openAttendanceModal(
                             context: context,
                             type: AttendanceType.checkOut,
                             locationState: loc,
                             userId: userId,
+                            isOffline: isOffline,
                           );
                         },
                       ),
@@ -768,7 +854,10 @@ class _MapHomeViewState extends State<MapHomeView> {
       constraints: const BoxConstraints(minWidth: 38, minHeight: 38),
       padding: EdgeInsets.zero,
       visualDensity: VisualDensity.compact,
-      onPressed: onTap,
+      onPressed: () {
+        HapticFeedbackService.shared.selectionClick();
+        onTap();
+      },
     );
   }
 
@@ -913,6 +1002,7 @@ class _MapHomeViewState extends State<MapHomeView> {
                               )
                             : const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white30, size: 14),
                         onTap: () {
+                          HapticFeedbackService.shared.selectionClick();
                           Navigator.pop(ctx);
                           context.read<LocationCubit>().selectBranch(branch);
                           _recenter(branch.geozones.first.coordinates);

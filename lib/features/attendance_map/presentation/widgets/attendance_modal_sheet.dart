@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/services/haptic_feedback_service.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/widgets/asis_action_button.dart';
 import '../../domain/branch_model.dart';
@@ -14,6 +15,7 @@ class AttendanceModalSheet extends StatefulWidget {
   final double distanceMeters;
   final bool isInside;
   final bool isSubmitting;
+  final bool isOffline;
   final Function(String? note, String? selfiePath) onConfirm;
 
   const AttendanceModalSheet({
@@ -24,6 +26,7 @@ class AttendanceModalSheet extends StatefulWidget {
     required this.distanceMeters,
     required this.isInside,
     this.isSubmitting = false,
+    this.isOffline = false,
     required this.onConfirm,
   });
 
@@ -34,6 +37,7 @@ class AttendanceModalSheet extends StatefulWidget {
     required Geozone geozone,
     required double distanceMeters,
     required bool isInside,
+    bool isOffline = false,
     required Function(String? note, String? selfiePath) onConfirm,
   }) {
     return showModalBottomSheet(
@@ -46,6 +50,7 @@ class AttendanceModalSheet extends StatefulWidget {
         geozone: geozone,
         distanceMeters: distanceMeters,
         isInside: isInside,
+        isOffline: isOffline,
         onConfirm: onConfirm,
       ),
     );
@@ -284,7 +289,35 @@ class _AttendanceModalSheetState extends State<AttendanceModalSheet> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
+
+            if (widget.isOffline) ...[
+              Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF59E0B).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.35)),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.wifi_off_rounded, color: Color(0xFFF59E0B), size: 18),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Modo sin conexión: Tu marcación quedará almacenada localmente y se enviará al servidor al detectar internet.',
+                        style: TextStyle(
+                          color: Color(0xFFFCD34D),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
 
             // Botones de accion para confirmacion o cancelacion
             Row(
@@ -292,7 +325,10 @@ class _AttendanceModalSheetState extends State<AttendanceModalSheet> {
                 Expanded(
                   flex: 1,
                   child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () {
+                      HapticFeedbackService.shared.selectionClick();
+                      Navigator.pop(context);
+                    },
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       side: BorderSide(color: isDark ? const Color(0x33FFFFFF) : AppColors.borderLight),
@@ -320,6 +356,7 @@ class _AttendanceModalSheetState extends State<AttendanceModalSheet> {
                     borderRadius: 14,
                     height: 52,
                     onPressed: () {
+                      HapticFeedbackService.shared.selectionClick();
                       final note = _noteController.text.trim();
                       widget.onConfirm(
                         note.isEmpty ? null : note,

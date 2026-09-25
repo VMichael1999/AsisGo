@@ -19,7 +19,7 @@ class AppColors {
   static const Color checkInColor = Color(0xFF10B981);
   static const Color lunchColor = Color(0xFFF59E0B);
   static const Color checkOutColor = Color(0xFFEF4444);
-  static const Color completedColor = Color(0xFF64748B);
+  static const Color completedColor = Color(0xFF059669);
   static const Color infoColor = Color(0xFF3B82F6);
   
   // Superficies y fondos claros

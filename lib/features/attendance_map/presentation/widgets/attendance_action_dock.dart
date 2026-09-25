@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/services/haptic_feedback_service.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/widgets/asis_action_button.dart';
 import '../../../../core/widgets/asis_glass_card.dart';
@@ -123,12 +124,22 @@ class _AttendanceActionDockState extends State<AttendanceActionDock> {
 
           // Boton principal de marcacion segun la fase del turno
           AsisActionButton(
-            label: widget.phase.buttonLabel,
+            label: isCompleted ? 'Jornada Finalizada' : widget.phase.buttonLabel,
             icon: isCompleted
                 ? Icons.check_circle_rounded
                 : (widget.phase.nextExpectedAttendance?.icon ?? Icons.fingerprint_rounded),
-            onPressed: isCompleted ? null : widget.onPrimaryActionPressed,
+            onPressed: isCompleted
+                ? null
+                : () {
+                    HapticFeedbackService.shared.selectionClick();
+                    widget.onPrimaryActionPressed();
+                  },
             backgroundColor: widget.phase.buttonColor,
+            disabledBackgroundColor: isCompleted ? const Color(0xFF059669) : null,
+            disabledTextColor: Colors.white,
+            borderSide: isCompleted
+                ? const BorderSide(color: Color(0xFF34D399), width: 1.5)
+                : null,
             height: 52,
             borderRadius: 16,
           ),
@@ -138,7 +149,10 @@ class _AttendanceActionDockState extends State<AttendanceActionDock> {
               widget.onSecondaryActionPressed != null) ...[
             const SizedBox(height: 6),
             TextButton.icon(
-              onPressed: widget.onSecondaryActionPressed,
+              onPressed: () {
+                HapticFeedbackService.shared.selectionClick();
+                widget.onSecondaryActionPressed!();
+              },
               icon: const Icon(Icons.exit_to_app_rounded, size: 15, color: Color(0xFFFCA5A5)),
               label: const Text(
                 '¿Deseas marcar salida anticipada?',

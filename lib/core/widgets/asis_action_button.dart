@@ -7,7 +7,10 @@ class AsisActionButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool isLoading;
   final Color? backgroundColor;
+  final Color? disabledBackgroundColor;
   final Color? textColor;
+  final Color? disabledTextColor;
+  final BorderSide? borderSide;
   final double height;
   final double borderRadius;
   final bool isFullWidth;
@@ -20,7 +23,10 @@ class AsisActionButton extends StatelessWidget {
     this.onPressed,
     this.isLoading = false,
     this.backgroundColor,
+    this.disabledBackgroundColor,
     this.textColor,
+    this.disabledTextColor,
+    this.borderSide,
     this.height = 54,
     this.borderRadius = 16,
     this.isFullWidth = true,
@@ -31,6 +37,10 @@ class AsisActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final effectiveBg = backgroundColor ?? AppColors.accent;
     final effectiveText = textColor ?? Colors.white;
+    final bg = backgroundColor;
+    final effectiveDisabledBg = disabledBackgroundColor ??
+        (bg != null ? bg.withValues(alpha: 0.85) : const Color(0xFF1E293B));
+    final effectiveDisabledText = disabledTextColor ?? effectiveText;
 
     Widget button = SizedBox(
       height: height,
@@ -39,11 +49,13 @@ class AsisActionButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: effectiveBg,
           foregroundColor: effectiveText,
-          disabledBackgroundColor: AppColors.borderLight,
+          disabledBackgroundColor: effectiveDisabledBg,
+          disabledForegroundColor: effectiveDisabledText,
           elevation: onPressed == null ? 0 : 4,
           shadowColor: effectiveBg.withValues(alpha: 0.35),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(borderRadius),
+            side: borderSide ?? BorderSide.none,
           ),
           padding: const EdgeInsets.symmetric(horizontal: 20),
         ),

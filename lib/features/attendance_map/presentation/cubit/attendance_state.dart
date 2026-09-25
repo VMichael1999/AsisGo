@@ -19,6 +19,9 @@ class AttendanceLoaded extends AttendanceState {
   final AttendanceRecord? lastRecord;
   final bool isSubmitting;
   final String? feedbackMessage;
+  final bool isOffline;
+  final int pendingSyncCount;
+  final bool isSyncing;
 
   const AttendanceLoaded({
     required this.currentPhase,
@@ -26,6 +29,9 @@ class AttendanceLoaded extends AttendanceState {
     this.lastRecord,
     this.isSubmitting = false,
     this.feedbackMessage,
+    this.isOffline = false,
+    this.pendingSyncCount = 0,
+    this.isSyncing = false,
   });
 
   AttendanceLoaded copyWith({
@@ -34,6 +40,9 @@ class AttendanceLoaded extends AttendanceState {
     AttendanceRecord? lastRecord,
     bool? isSubmitting,
     String? feedbackMessage,
+    bool? isOffline,
+    int? pendingSyncCount,
+    bool? isSyncing,
   }) {
     return AttendanceLoaded(
       currentPhase: currentPhase ?? this.currentPhase,
@@ -41,6 +50,9 @@ class AttendanceLoaded extends AttendanceState {
       lastRecord: lastRecord ?? this.lastRecord,
       isSubmitting: isSubmitting ?? this.isSubmitting,
       feedbackMessage: feedbackMessage,
+      isOffline: isOffline ?? this.isOffline,
+      pendingSyncCount: pendingSyncCount ?? this.pendingSyncCount,
+      isSyncing: isSyncing ?? this.isSyncing,
     );
   }
 
@@ -51,6 +63,9 @@ class AttendanceLoaded extends AttendanceState {
         lastRecord,
         isSubmitting,
         feedbackMessage,
+        isOffline,
+        pendingSyncCount,
+        isSyncing,
       ];
 }
 
