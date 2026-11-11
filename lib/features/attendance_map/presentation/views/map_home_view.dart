@@ -140,8 +140,6 @@ class _MapHomeViewState extends State<MapHomeView> {
       auditDetails: {
         'Sede Requerida': loc.currentBranch.name,
         'Geozona': loc.currentGeozone.name,
-        'Radio Permitido':
-            '${loc.currentGeozone.radiusMeters.toStringAsFixed(0)} m',
         'Tu Distancia':
             loc.distanceMeters < 1000
                 ? '${loc.distanceMeters.toStringAsFixed(0)} m'
@@ -328,16 +326,13 @@ class _MapHomeViewState extends State<MapHomeView> {
                     markerId: gm.MarkerId('gz-${gz.id}'),
                     position: gz.coordinates.toGoogle,
                     icon: _branchIcon ?? gm.BitmapDescriptor.defaultMarker,
+                    // Solo nombre de sede y punto; el radio no se muestra al colaborador
                     infoWindow: gm.InfoWindow(
-                      title: gz.name,
-                      snippet: 'Radio ${gz.radiusMeters.toStringAsFixed(0)} m',
+                      title: activeBranch.name,
+                      snippet: gz.name,
                     ),
-                    onTap: () {
-                      _recenter(gz.coordinates);
-                      context.read<LocationCubit>().simulateUserPosition(
-                        gz.coordinates,
-                      );
-                    },
+                    // Tocar el marcador solo centra el mapa; nunca altera la posicion del usuario
+                    onTap: () => _recenter(gz.coordinates),
                   ),
                 );
               }
@@ -472,6 +467,15 @@ class _MapHomeViewState extends State<MapHomeView> {
                                                                   .ellipsis,
                                                         ),
                                                       ),
+                                                      const Icon(
+                                                        Icons
+                                                            .expand_more_rounded,
+                                                        size: 18,
+                                                        color:
+                                                            AppColors
+                                                                .textSecondary,
+                                                      ),
+                                                      const SizedBox(width: 6),
                                                       Container(
                                                         padding:
                                                             const EdgeInsets.symmetric(
@@ -488,7 +492,7 @@ class _MapHomeViewState extends State<MapHomeView> {
                                                               ),
                                                         ),
                                                         child: Text(
-                                                          '${loc.currentBranchIndex + 1} de ${loc.companyBranches.length}',
+                                                          'Sede ${loc.currentBranchIndex + 1} de ${loc.companyBranches.length}',
                                                           style:
                                                               const TextStyle(
                                                                 color:
@@ -521,12 +525,12 @@ class _MapHomeViewState extends State<MapHomeView> {
                                             ),
                                             const SizedBox(width: 8),
                                             GestureDetector(
-                                              onTap: () {
-                                                context
-                                                    .read<LocationCubit>()
-                                                    .exitBranchExplorer();
-                                                _recenter(loc.userPosition);
-                                              },
+                                              onTap:
+                                                  () => _setBranchExplorer(
+                                                    context,
+                                                    loc,
+                                                    active: false,
+                                                  ),
                                               child: Container(
                                                 padding: const EdgeInsets.all(
                                                   6,
@@ -568,7 +572,8 @@ class _MapHomeViewState extends State<MapHomeView> {
                         ),
 
                         // Flechas laterales para alternar sedes de la empresa activa
-                        if (loc.companyBranches.length > 1) ...[
+                        if (loc.isBranchExplorerActive &&
+                            loc.companyBranches.length > 1) ...[
                           // Flecha lateral izquierda
                           Positioned(
                             left: 12,
@@ -658,6 +663,10 @@ class _MapHomeViewState extends State<MapHomeView> {
                                 icon: Icons.my_location_rounded,
                                 tooltip: 'Centrar en mi ubicación',
                                 onTap: () {
+                                  // Reanuda el GPS en vivo por si estaba detenido y centra en la posicion real
+                                  context
+                                      .read<LocationCubit>()
+                                      .resumeLiveLocation();
                                   _recenter(loc.userPosition);
                                 },
                               ),
@@ -666,29 +675,17 @@ class _MapHomeViewState extends State<MapHomeView> {
                               // Modo explorador de sedes de la empresa activa
                               _buildGlassIconButton(
                                 icon: Icons.domain_rounded,
-                                color:
-                                    loc.isBranchExplorerActive
-                                        ? Colors.white
-                                        : Colors.white60,
+                                isActive: loc.isBranchExplorerActive,
                                 tooltip:
-                                    'Sedes de ${loc.selectedCompany.shortName}',
-                                onTap: () {
-                                  final cubit = context.read<LocationCubit>();
-                                  if (!loc.isBranchExplorerActive) {
-                                    cubit.toggleBranchExplorer();
-                                    if (loc.companyBranches.isNotEmpty) {
-                                      _recenter(
-                                        loc
-                                            .activeMapBranch
-                                            .geozones
-                                            .first
-                                            .coordinates,
-                                      );
-                                    }
-                                  } else {
-                                    _showCompanyBranchesSheet(context, loc);
-                                  }
-                                },
+                                    loc.isBranchExplorerActive
+                                        ? 'Ocultar sedes de ${loc.selectedCompany.shortName}'
+                                        : 'Ver sedes de ${loc.selectedCompany.shortName}',
+                                onTap:
+                                    () => _setBranchExplorer(
+                                      context,
+                                      loc,
+                                      active: !loc.isBranchExplorerActive,
+                                    ),
                               ),
                               const SizedBox(height: 8),
 
@@ -698,10 +695,7 @@ class _MapHomeViewState extends State<MapHomeView> {
                                     loc.showAllGeozones
                                         ? Icons.layers_rounded
                                         : Icons.layers_clear_rounded,
-                                color:
-                                    loc.showAllGeozones
-                                        ? Colors.white
-                                        : Colors.white60,
+                                isActive: loc.showAllGeozones,
                                 tooltip: 'Mostrar/Ocultar Geozonas',
                                 onTap:
                                     () =>
@@ -982,29 +976,59 @@ class _MapHomeViewState extends State<MapHomeView> {
     required IconData icon,
     required String tooltip,
     required VoidCallback onTap,
-    Color color = Colors.white,
+    bool? isActive,
   }) {
+    // isActive == null: boton de accion. true/false: interruptor con estado visible.
+    final on = isActive ?? false;
     return Tooltip(
       message: tooltip,
-      child: Material(
-        color: AppColors.primary,
-        elevation: 3,
-        shadowColor: Colors.black38,
-        borderRadius: BorderRadius.circular(10),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(10),
-          onTap: () {
-            HapticFeedbackService.shared.selectionClick();
-            onTap();
-          },
-          child: SizedBox(
-            width: 42,
-            height: 42,
-            child: Icon(icon, color: color, size: 22),
+      child: Semantics(
+        button: true,
+        toggled: isActive,
+        child: Material(
+          color: on ? Colors.white : AppColors.primary,
+          elevation: 3,
+          shadowColor: Colors.black38,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+            side: BorderSide(color: AppColors.primary, width: on ? 2 : 0),
+          ),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(10),
+            onTap: () {
+              HapticFeedbackService.shared.selectionClick();
+              onTap();
+            },
+            child: SizedBox(
+              width: 42,
+              height: 42,
+              child: Icon(
+                icon,
+                color: on ? AppColors.primary : Colors.white,
+                size: 22,
+              ),
+            ),
           ),
         ),
       ),
     );
+  }
+
+  /// Enciende o apaga el modo de sedes: tarjeta superior + flechas laterales.
+  void _setBranchExplorer(
+    BuildContext context,
+    LocationLoaded loc, {
+    required bool active,
+  }) {
+    final cubit = context.read<LocationCubit>();
+    if (active) {
+      if (!loc.isBranchExplorerActive) cubit.toggleBranchExplorer();
+      final geozones = loc.activeMapBranch.geozones;
+      if (geozones.isNotEmpty) _recenter(geozones.first.coordinates);
+    } else {
+      cubit.exitBranchExplorer();
+      _recenter(loc.userPosition);
+    }
   }
 
   void _showCompanyBranchesSheet(BuildContext context, LocationLoaded loc) {
