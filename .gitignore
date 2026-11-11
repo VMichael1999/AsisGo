@@ -46,3 +46,6 @@ app.*.map.json
 
 # Variables de entorno locales (claves de API)
 .env
+
+# Skills locales de Claude Code (herramientas de terceros)
+.claude/skills/
