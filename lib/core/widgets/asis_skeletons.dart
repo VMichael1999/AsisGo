@@ -403,9 +403,9 @@ class AsisBottomNavSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: Color(0xFF0D131F),
+        color: Colors.white,
         border: Border(
-          top: BorderSide(color: Color(0x22FFFFFF), width: 0.8),
+          top: BorderSide(color: AppColors.borderLight, width: 0.8),
         ),
       ),
       child: SafeArea(

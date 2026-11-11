@@ -183,7 +183,7 @@ class _NewJustificationSheetState extends State<NewJustificationSheet> {
                     height: 4,
                     margin: const EdgeInsets.only(bottom: 16),
                     decoration: BoxDecoration(
-                      color: Colors.white24,
+                      color: AppColors.borderLight,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -485,7 +485,7 @@ class _NewJustificationSheetState extends State<NewJustificationSheet> {
                     decoration: BoxDecoration(
                       color: AppColors.accent.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.accent.withValues(alpha: 0.4)),
+                      border: Border.all(color: AppColors.borderLight),
                     ),
                     child: Row(
                       children: [

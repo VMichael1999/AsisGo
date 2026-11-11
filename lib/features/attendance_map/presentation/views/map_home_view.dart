@@ -1,14 +1,13 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_map/flutter_map.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart' as gm;
 import 'package:latlong2/latlong.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/haptic_feedback_service.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/widgets/asis_glass_card.dart';
 import '../../../../core/widgets/asis_security_dialog.dart';
-import '../../domain/branch_model.dart';
 import '../../domain/shift_phase.dart';
 import '../cubit/attendance_cubit.dart';
 import '../cubit/attendance_state.dart';
@@ -16,9 +15,10 @@ import '../cubit/location_cubit.dart';
 import '../cubit/location_state.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../../auth/presentation/cubit/auth_state.dart';
+import 'branches_view.dart';
 import '../widgets/attendance_action_dock.dart';
 import '../widgets/attendance_modal_sheet.dart';
-import '../widgets/geozone_status_badge.dart';
+import '../widgets/map_visuals.dart';
 import '../widgets/offline_status_badge.dart';
 import 'package:asisgo/features/calendar_history/presentation/cubit/calendar_cubit.dart';
 import '../../../../core/widgets/asis_shimmer.dart';
@@ -32,12 +32,14 @@ class MapHomeView extends StatefulWidget {
 }
 
 class _MapHomeViewState extends State<MapHomeView> {
-  final MapController _mapController = MapController();
+  gm.GoogleMapController? _mapController;
+  gm.BitmapDescriptor? _branchIcon;
   String? _lastIsolatedBranchId;
 
   @override
   void initState() {
     super.initState();
+    _loadBranchIcon();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<LocationCubit>().initLocation();
       final authState = context.read<AuthCubit>().state;
@@ -50,45 +52,56 @@ class _MapHomeViewState extends State<MapHomeView> {
   void _recenter(LatLng point, {double zoom = 16.5}) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      try {
-        _mapController.move(point, zoom);
-      } catch (e) {
-        debugPrint('MapController not ready yet: $e');
-      }
+      _mapController?.animateCamera(
+        gm.CameraUpdate.newLatLngZoom(point.toGoogle, zoom),
+      );
     });
+  }
+
+  Future<void> _loadBranchIcon() async {
+    final icon = await gm.BitmapDescriptor.asset(
+      const ImageConfiguration(),
+      'assets/markers/branch_building.png',
+      width: 46,
+    );
+    if (mounted) setState(() => _branchIcon = icon);
+  }
+
+  @override
+  void dispose() {
+    _mapController?.dispose();
+    super.dispose();
   }
 
   void _openAttendanceModal({
     required BuildContext context,
-    required AttendanceType type,
+    required List<AttendanceType> options,
     required LocationLoaded locationState,
     required String userId,
     bool isOffline = false,
   }) {
     AttendanceModalSheet.show(
       context: context,
-      type: type,
+      options: options,
       branch: locationState.currentBranch,
       geozone: locationState.currentGeozone,
-      distanceMeters: locationState.distanceMeters,
-      isInside: locationState.isInsideGeozone,
       isOffline: isOffline,
-      onConfirm: (note, selfiePath) {
+      onConfirm: (type, note, selfiePath) {
         context.read<AttendanceCubit>().registerPunch(
-              userId: userId,
-              type: type,
-              branchId: locationState.currentBranch.id,
-              branchName: locationState.currentBranch.name,
-              geozoneId: locationState.currentGeozone.id,
-              geozoneName: locationState.currentGeozone.name,
-              latitude: locationState.userPosition.latitude,
-              longitude: locationState.userPosition.longitude,
-              distanceToGeozone: locationState.distanceMeters,
-              isInsideGeozone: locationState.isInsideGeozone,
-              isMockedLocation: locationState.isMocked,
-              note: note,
-              selfiePath: selfiePath,
-            );
+          userId: userId,
+          type: type,
+          branchId: locationState.currentBranch.id,
+          branchName: locationState.currentBranch.name,
+          geozoneId: locationState.currentGeozone.id,
+          geozoneName: locationState.currentGeozone.name,
+          latitude: locationState.userPosition.latitude,
+          longitude: locationState.userPosition.longitude,
+          distanceToGeozone: locationState.distanceMeters,
+          isInsideGeozone: locationState.isInsideGeozone,
+          isMockedLocation: locationState.isMocked,
+          note: note,
+          selfiePath: selfiePath,
+        );
       },
     );
   }
@@ -127,10 +140,12 @@ class _MapHomeViewState extends State<MapHomeView> {
       auditDetails: {
         'Sede Requerida': loc.currentBranch.name,
         'Geozona': loc.currentGeozone.name,
-        'Radio Permitido': '${loc.currentGeozone.radiusMeters.toStringAsFixed(0)} m',
-        'Tu Distancia': loc.distanceMeters < 1000
-            ? '${loc.distanceMeters.toStringAsFixed(0)} m'
-            : '${(loc.distanceMeters / 1000).toStringAsFixed(2)} km',
+        'Radio Permitido':
+            '${loc.currentGeozone.radiusMeters.toStringAsFixed(0)} m',
+        'Tu Distancia':
+            loc.distanceMeters < 1000
+                ? '${loc.distanceMeters.toStringAsFixed(0)} m'
+                : '${(loc.distanceMeters / 1000).toStringAsFixed(2)} km',
       },
     );
   }
@@ -153,7 +168,11 @@ class _MapHomeViewState extends State<MapHomeView> {
               SnackBar(
                 content: Row(
                   children: [
-                    const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 22),
+                    const Icon(
+                      Icons.check_circle_rounded,
+                      color: Color(0xFF10B981),
+                      size: 22,
+                    ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -182,7 +201,11 @@ class _MapHomeViewState extends State<MapHomeView> {
               SnackBar(
                 content: Row(
                   children: [
-                    const Icon(Icons.error_outline_rounded, color: Color(0xFFEF4444), size: 22),
+                    const Icon(
+                      Icons.error_outline_rounded,
+                      color: Color(0xFFEF4444),
+                      size: 22,
+                    ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -213,19 +236,22 @@ class _MapHomeViewState extends State<MapHomeView> {
               if (locationState is LocationLoaded) {
                 // Notificar cambio de estado de geozona a la Live Activity de la Dynamic Island
                 context.read<AttendanceCubit>().updateGeozoneStatus(
-                      isInsideGeozone: locationState.isInsideGeozone,
-                    );
+                  isInsideGeozone: locationState.isInsideGeozone,
+                );
 
                 if (_lastIsolatedBranchId != locationState.isolatedBranchId) {
                   _lastIsolatedBranchId = locationState.isolatedBranchId;
                   if (locationState.activeMapBranch.geozones.isNotEmpty) {
-                    _recenter(locationState.activeMapBranch.geozones.first.coordinates);
+                    _recenter(
+                      locationState.activeMapBranch.geozones.first.coordinates,
+                    );
                   }
                 }
               }
             },
             builder: (context, locationState) {
-              if (locationState is LocationLoading || locationState is LocationInitial) {
+              if (locationState is LocationLoading ||
+                  locationState is LocationInitial) {
                 return const AsisLoadingOverlay(
                   skeleton: AsisMapSkeleton(),
                   message: 'Sincronizando telemetría y geocercas...',
@@ -239,16 +265,25 @@ class _MapHomeViewState extends State<MapHomeView> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.location_disabled_rounded, size: 56, color: AppColors.checkOutColor),
+                        const Icon(
+                          Icons.location_disabled_rounded,
+                          size: 56,
+                          color: AppColors.checkOutColor,
+                        ),
                         const SizedBox(height: 16),
                         Text(
                           locationState.message,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: AppColors.textPrimary,
+                          ),
                         ),
                         const SizedBox(height: 20),
                         ElevatedButton(
-                          onPressed: () => context.read<LocationCubit>().initLocation(),
+                          onPressed:
+                              () =>
+                                  context.read<LocationCubit>().initLocation(),
                           child: const Text('Reintentar'),
                         ),
                       ],
@@ -260,104 +295,49 @@ class _MapHomeViewState extends State<MapHomeView> {
               final loc = locationState as LocationLoaded;
               final mediaQuery = MediaQuery.of(context);
               final screenHeight = mediaQuery.size.height;
-              final safeAreaTop = mediaQuery.padding.top;
-              final safeAreaBottom = mediaQuery.padding.bottom;
 
-              // Calculo dinamico para evitar solapamientos con el dock de asistencia
-              final isWorkingPhase = attendanceState is AttendanceLoaded &&
-                  attendanceState.currentPhase == ShiftPhase.working;
-              final branchCardBottom = safeAreaBottom + (isWorkingPhase ? 218.0 : 176.0);
-
-              // Posicionamiento de controles flotantes y flechas laterales anticolision
-              final toolButtonsTop = safeAreaTop + 86.0;
-              final arrowTop = math.max(screenHeight * 0.48, toolButtonsTop + 195.0);
+              // Boton Registrar centrado abajo; controles a la derecha; tarjeta de sede encima
+              const toolButtonsBottom = 16.0;
+              final arrowTop = screenHeight * 0.22;
 
               // Generar elementos visuales de geocercas exclusivamente para la empresa seleccionada
-              final circleMarkers = <CircleMarker>[];
-              final mapMarkers = <Marker>[];
+              final circles = <gm.Circle>{};
+              final mapMarkers = <gm.Marker>{};
 
               final activeBranch = loc.activeMapBranch;
               // 1. Geocercas detalladas para la sede activa
               for (final gz in activeBranch.geozones) {
                 final isCurrentGz = gz.id == loc.currentGeozone.id;
-                final isCurrentAndInside = isCurrentGz && loc.isInsideGeozone;
 
-                circleMarkers.add(
-                  CircleMarker(
-                    point: gz.coordinates,
+                // Geocercas en gris neutro; la activa solo se distingue por el trazo
+                circles.add(
+                  gm.Circle(
+                    circleId: gm.CircleId(gz.id),
+                    center: gz.coordinates.toGoogle,
                     radius: gz.radiusMeters,
-                    useRadiusInMeter: true,
-                    color: isCurrentAndInside
-                        ? AppColors.accent.withValues(alpha: 0.18)
-                        : isCurrentGz
-                            ? AppColors.lunchColor.withValues(alpha: 0.15)
-                            : gz.type.color.withValues(alpha: 0.08),
-                    borderColor: isCurrentAndInside
-                        ? AppColors.accent
-                        : isCurrentGz
-                            ? AppColors.lunchColor
-                            : gz.type.color.withValues(alpha: 0.6),
-                    borderStrokeWidth: isCurrentGz ? 2.5 : 1.2,
+                    fillColor: AppColors.textSecondary.withValues(alpha: 0.16),
+                    strokeColor: AppColors.textSecondary.withValues(
+                      alpha: isCurrentGz ? 0.9 : 0.5,
+                    ),
+                    strokeWidth: isCurrentGz ? 3 : 1,
                   ),
                 );
 
                 mapMarkers.add(
-                  Marker(
-                    point: gz.coordinates,
-                    width: 90,
-                    height: 54,
-                    child: GestureDetector(
-                      onTap: () {
-                        _recenter(gz.coordinates);
-                        context.read<LocationCubit>().simulateUserPosition(gz.coordinates);
-                      },
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: const Color(0xEE1E293B),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: isCurrentGz ? AppColors.accent : Colors.white24,
-                                width: isCurrentGz ? 1.5 : 0.8,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.3),
-                                  blurRadius: 6,
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(gz.type.icon, size: 11, color: isCurrentGz ? AppColors.accent : Colors.white),
-                                const SizedBox(width: 4),
-                                Flexible(
-                                  child: Text(
-                                    gz.name,
-                                    style: TextStyle(
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.w700,
-                                      color: isCurrentGz ? AppColors.accent : Colors.white,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Icon(
-                            Icons.location_on_rounded,
-                            size: 20,
-                            color: isCurrentGz ? AppColors.accent : gz.type.color,
-                          ),
-                        ],
-                      ),
+                  gm.Marker(
+                    markerId: gm.MarkerId('gz-${gz.id}'),
+                    position: gz.coordinates.toGoogle,
+                    icon: _branchIcon ?? gm.BitmapDescriptor.defaultMarker,
+                    infoWindow: gm.InfoWindow(
+                      title: gz.name,
+                      snippet: 'Radio ${gz.radiusMeters.toStringAsFixed(0)} m',
                     ),
+                    onTap: () {
+                      _recenter(gz.coordinates);
+                      context.read<LocationCubit>().simulateUserPosition(
+                        gz.coordinates,
+                      );
+                    },
                   ),
                 );
               }
@@ -366,471 +346,489 @@ class _MapHomeViewState extends State<MapHomeView> {
               for (final otherBranch in loc.companyBranches) {
                 if (otherBranch.id != activeBranch.id) {
                   mapMarkers.add(
-                    Marker(
-                      point: otherBranch.coordinates,
-                      width: 84,
-                      height: 50,
-                      child: GestureDetector(
-                        onTap: () {
-                          context.read<LocationCubit>().selectBranch(otherBranch);
-                          _recenter(otherBranch.geozones.first.coordinates);
-                        },
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: const Color(0xDD0D131F),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: Colors.white24, width: 0.8),
-                              ),
-                              child: Text(
-                                otherBranch.name,
-                                style: const TextStyle(color: Colors.white70, fontSize: 8, fontWeight: FontWeight.w600),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const Icon(Icons.location_city_rounded, size: 18, color: Colors.white60),
-                          ],
-                        ),
-                      ),
+                    gm.Marker(
+                      markerId: gm.MarkerId('br-${otherBranch.id}'),
+                      position: otherBranch.coordinates.toGoogle,
+                      icon: _branchIcon ?? gm.BitmapDescriptor.defaultMarker,
+                      infoWindow: gm.InfoWindow(title: otherBranch.name),
+                      onTap: () {
+                        context.read<LocationCubit>().selectBranch(otherBranch);
+                        _recenter(otherBranch.geozones.first.coordinates);
+                      },
                     ),
                   );
                 }
               }
 
-              // Marcador de posicion actual del usuario
-              mapMarkers.add(
-                Marker(
-                  point: loc.userPosition,
-                  width: 44,
-                  height: 44,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Container(
-                        width: 38,
-                        height: 38,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: (loc.isBlockedBySecurity
-                                  ? AppColors.checkOutColor
-                                  : loc.isInsideGeozone
-                                      ? AppColors.accent
-                                      : AppColors.lunchColor)
-                              .withValues(alpha: 0.25),
-                        ),
-                      ),
-                      Container(
-                        width: 20,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: loc.isBlockedBySecurity
-                              ? AppColors.checkOutColor
-                              : loc.isInsideGeozone
-                                  ? AppColors.accent
-                                  : AppColors.lunchColor,
-                          border: Border.all(color: Colors.white, width: 3),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.3),
-                              blurRadius: 6,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-
-              return Stack(
+              return Column(
                 children: [
-                  // Capa base de mapa de alto rendimiento en modo oscuro
-                  Container(
-                    color: AppColors.obsidianCanvas,
-                    child: FlutterMap(
-                      mapController: _mapController,
-                      options: MapOptions(
-                        initialCenter: loc.userPosition,
-                        initialZoom: 16.5,
-                        minZoom: 4,
-                        maxZoom: 19,
-                      ),
+                  _buildHeader(context, loc, authState.currentUser?.fullName),
+                  Expanded(
+                    child: Stack(
                       children: [
-                        TileLayer(
-                          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                          tileBuilder: (context, tileWidget, tile) {
-                            return ColorFiltered(
-                              colorFilter: const ColorFilter.matrix(<double>[
-                                -0.85, 0, 0, 0, 215,
-                                0, -0.85, 0, 0, 215,
-                                0, 0, -0.80, 0, 225,
-                                0, 0, 0, 1, 0,
-                              ]),
-                              child: tileWidget,
-                            );
-                          },
-                          userAgentPackageName: 'com.asisgo.app',
-                          maxZoom: 19,
-                        ),
-                        if (loc.showAllGeozones) CircleLayer(circles: circleMarkers),
-                        MarkerLayer(markers: mapMarkers),
-                      ],
-                    ),
-                  ),
-
-                  // Capsula flotante superior con estado de geozona y modo offline
-                  SafeArea(
-                    child: Align(
-                      alignment: Alignment.topCenter,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          GeozoneStatusBadge(
-                            isInside: loc.isInsideGeozone,
-                            distanceMeters: loc.distanceMeters,
-                            branch: loc.currentBranch,
-                            geozone: loc.currentGeozone,
-                            isMocked: loc.isMocked,
-                            isMockProtectionActive: loc.isMockProtectionActive,
-                          ),
-                          if (attendanceState is AttendanceLoaded)
-                            OfflineStatusBadge(
-                              isOffline: attendanceState.isOffline,
-                              pendingSyncCount: attendanceState.pendingSyncCount,
-                              isSyncing: attendanceState.isSyncing,
-                              onSyncTap: () => context.read<AttendanceCubit>().syncPendingNow(),
+                        // Capa base de mapa de alto rendimiento en modo oscuro
+                        Container(
+                          color: AppColors.backgroundLight,
+                          child: gm.GoogleMap(
+                            onMapCreated:
+                                (controller) => _mapController = controller,
+                            initialCameraPosition: gm.CameraPosition(
+                              target: loc.userPosition.toGoogle,
+                              zoom: 16.5,
                             ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // Flechas laterales para alternar sedes de la empresa activa
-                  if (loc.isBranchExplorerActive && loc.companyBranches.length > 1) ...[
-                    // Flecha lateral izquierda
-                    Positioned(
-                      left: 14,
-                      top: arrowTop,
-                      child: AsisGlassCard(
-                        borderRadius: 28,
-                        padding: EdgeInsets.zero,
-                        isDark: true,
-                        customBackground: const Color(0xEE0D131F),
-                        customBorderColor: const Color(0x44FFFFFF),
-                        child: IconButton(
-                          icon: const Icon(Icons.chevron_left_rounded, color: Colors.white, size: 30),
-                          tooltip: 'Sede anterior de ${loc.selectedCompany.shortName}',
-                          onPressed: () {
-                            HapticFeedbackService.shared.selectionClick();
-                            final cubit = context.read<LocationCubit>();
-                            cubit.previousBranch();
-                            final updated = cubit.state;
-                            if (updated is LocationLoaded) {
-                              _recenter(updated.activeMapBranch.geozones.first.coordinates);
-                            }
-                          },
+                            minMaxZoomPreference: const gm.MinMaxZoomPreference(
+                              4,
+                              19,
+                            ),
+                            circles:
+                                loc.showAllGeozones
+                                    ? circles
+                                    : const <gm.Circle>{},
+                            markers: mapMarkers,
+                            // Punto azul nativo de Google Maps con la ubicacion del dispositivo
+                            myLocationEnabled: true,
+                            myLocationButtonEnabled: false,
+                            zoomControlsEnabled: false,
+                            mapToolbarEnabled: false,
+                            compassEnabled: false,
+                          ),
                         ),
-                      ),
-                    ),
 
-                    // Flecha lateral derecha
-                    Positioned(
-                      right: 14,
-                      top: arrowTop,
-                      child: AsisGlassCard(
-                        borderRadius: 28,
-                        padding: EdgeInsets.zero,
-                        isDark: true,
-                        customBackground: const Color(0xEE0D131F),
-                        customBorderColor: const Color(0x44FFFFFF),
-                        child: IconButton(
-                          icon: const Icon(Icons.chevron_right_rounded, color: Colors.white, size: 30),
-                          tooltip: 'Siguiente sede de ${loc.selectedCompany.shortName}',
-                          onPressed: () {
-                            HapticFeedbackService.shared.selectionClick();
-                            final cubit = context.read<LocationCubit>();
-                            cubit.nextBranch();
-                            final updated = cubit.state;
-                            if (updated is LocationLoaded) {
-                              _recenter(updated.activeMapBranch.geozones.first.coordinates);
-                            }
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
-
-                  // Tarjeta flotante de exploracion de sedes sobre el dock con elevacion dinamica
-                  if (loc.isBranchExplorerActive)
-                    AnimatedPositioned(
-                      duration: const Duration(milliseconds: 250),
-                      curve: Curves.easeOutCubic,
-                      left: 16,
-                      right: 16,
-                      bottom: branchCardBottom,
-                      child: GestureDetector(
-                        onTap: () => _showCompanyBranchesSheet(context, loc),
-                        child: AsisGlassCard(
-                          borderRadius: 18,
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                          isDark: true,
-                          customBackground: const Color(0xEE0B111E),
-                          customBorderColor: AppColors.accent.withValues(alpha: 0.5),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: AppColors.accent.withValues(alpha: 0.15),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(Icons.business_rounded, color: AppColors.accent, size: 20),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            loc.activeMapBranch.name,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w700,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white.withValues(alpha: 0.1),
-                                            borderRadius: BorderRadius.circular(10),
-                                          ),
-                                          child: Text(
-                                            '${loc.currentBranchIndex + 1} de ${loc.companyBranches.length}',
-                                            style: const TextStyle(
-                                              color: AppColors.accent,
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.w700,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+                        // Aviso flotante de modo offline y marcas pendientes
+                        SafeArea(
+                          top: false,
+                          child: Align(
+                            alignment: Alignment.topCenter,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Tarjeta de la sede activa (modo explorador)
+                                if (loc.isBranchExplorerActive)
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      16,
+                                      10,
+                                      16,
+                                      0,
                                     ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      '${loc.activeMapBranch.address} • ${loc.selectedCompany.shortName}',
-                                      style: const TextStyle(
-                                        color: AppColors.textMuted,
-                                        fontSize: 11,
+                                    child: GestureDetector(
+                                      onTap:
+                                          () => _showCompanyBranchesSheet(
+                                            context,
+                                            loc,
+                                          ),
+                                      child: AsisGlassCard(
+                                        borderRadius: 18,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 14,
+                                          vertical: 10,
+                                        ),
+                                        isDark: false,
+                                        customBackground: const Color(
+                                          0xF7FFFFFF,
+                                        ),
+                                        customBorderColor:
+                                            AppColors.borderLight,
+                                        child: Row(
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.all(8),
+                                              decoration: BoxDecoration(
+                                                color: AppColors.accent
+                                                    .withValues(alpha: 0.15),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: const Icon(
+                                                Icons.business_rounded,
+                                                color: AppColors.accent,
+                                                size: 20,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: Text(
+                                                          loc
+                                                              .activeMapBranch
+                                                              .name,
+                                                          style: const TextStyle(
+                                                            color:
+                                                                AppColors
+                                                                    .textPrimary,
+                                                            fontSize: 13,
+                                                            fontWeight:
+                                                                FontWeight.w700,
+                                                          ),
+                                                          maxLines: 1,
+                                                          overflow:
+                                                              TextOverflow
+                                                                  .ellipsis,
+                                                        ),
+                                                      ),
+                                                      Container(
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                              horizontal: 7,
+                                                              vertical: 2,
+                                                            ),
+                                                        decoration: BoxDecoration(
+                                                          color:
+                                                              AppColors
+                                                                  .accentLight,
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                10,
+                                                              ),
+                                                        ),
+                                                        child: Text(
+                                                          '${loc.currentBranchIndex + 1} de ${loc.companyBranches.length}',
+                                                          style:
+                                                              const TextStyle(
+                                                                color:
+                                                                    AppColors
+                                                                        .accent,
+                                                                fontSize: 10,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w700,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 2),
+                                                  Text(
+                                                    '${loc.activeMapBranch.address} • ${loc.selectedCompany.shortName}',
+                                                    style: const TextStyle(
+                                                      color:
+                                                          AppColors
+                                                              .textSecondary,
+                                                      fontSize: 11,
+                                                    ),
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            GestureDetector(
+                                              onTap: () {
+                                                context
+                                                    .read<LocationCubit>()
+                                                    .exitBranchExplorer();
+                                                _recenter(loc.userPosition);
+                                              },
+                                              child: Container(
+                                                padding: const EdgeInsets.all(
+                                                  6,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(
+                                                    0xFFF1F5F9,
+                                                  ),
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: const Icon(
+                                                  Icons.close_rounded,
+                                                  size: 16,
+                                                  color:
+                                                      AppColors.textSecondary,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                  ],
+                                  ),
+                                if (attendanceState is AttendanceLoaded)
+                                  OfflineStatusBadge(
+                                    isOffline: attendanceState.isOffline,
+                                    pendingSyncCount:
+                                        attendanceState.pendingSyncCount,
+                                    isSyncing: attendanceState.isSyncing,
+                                    onSyncTap:
+                                        () =>
+                                            context
+                                                .read<AttendanceCubit>()
+                                                .syncPendingNow(),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        // Flechas laterales para alternar sedes de la empresa activa
+                        if (loc.companyBranches.length > 1) ...[
+                          // Flecha lateral izquierda
+                          Positioned(
+                            left: 12,
+                            top: arrowTop,
+                            child: AsisGlassCard(
+                              borderRadius: 10,
+                              padding: EdgeInsets.zero,
+                              blurAmount: 0,
+                              isDark: false,
+                              customBackground: AppColors.primary,
+                              customBorderColor: AppColors.primary,
+                              child: IconButton(
+                                icon: const Icon(
+                                  Icons.chevron_left_rounded,
+                                  color: Colors.white,
+                                  size: 30,
                                 ),
+                                tooltip:
+                                    'Sede anterior de ${loc.selectedCompany.shortName}',
+                                onPressed: () {
+                                  HapticFeedbackService.shared.selectionClick();
+                                  final cubit = context.read<LocationCubit>();
+                                  cubit.previousBranch();
+                                  final updated = cubit.state;
+                                  if (updated is LocationLoaded) {
+                                    _recenter(
+                                      updated
+                                          .activeMapBranch
+                                          .geozones
+                                          .first
+                                          .coordinates,
+                                    );
+                                  }
+                                },
                               ),
-                              const SizedBox(width: 8),
-                              GestureDetector(
+                            ),
+                          ),
+
+                          // Flecha lateral derecha
+                          Positioned(
+                            right: 12,
+                            top: arrowTop,
+                            child: AsisGlassCard(
+                              borderRadius: 10,
+                              padding: EdgeInsets.zero,
+                              blurAmount: 0,
+                              isDark: false,
+                              customBackground: AppColors.primary,
+                              customBorderColor: AppColors.primary,
+                              child: IconButton(
+                                icon: const Icon(
+                                  Icons.chevron_right_rounded,
+                                  color: Colors.white,
+                                  size: 30,
+                                ),
+                                tooltip:
+                                    'Siguiente sede de ${loc.selectedCompany.shortName}',
+                                onPressed: () {
+                                  HapticFeedbackService.shared.selectionClick();
+                                  final cubit = context.read<LocationCubit>();
+                                  cubit.nextBranch();
+                                  final updated = cubit.state;
+                                  if (updated is LocationLoaded) {
+                                    _recenter(
+                                      updated
+                                          .activeMapBranch
+                                          .geozones
+                                          .first
+                                          .coordinates,
+                                    );
+                                  }
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+
+                        // Controles flotantes del mapa
+                        Positioned(
+                          right: 16,
+                          bottom: toolButtonsBottom,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Centrar en la ubicacion real del usuario
+                              _buildGlassIconButton(
+                                icon: Icons.my_location_rounded,
+                                tooltip: 'Centrar en mi ubicación',
                                 onTap: () {
-                                  context.read<LocationCubit>().exitBranchExplorer();
                                   _recenter(loc.userPosition);
                                 },
-                                child: Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.08),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(Icons.close_rounded, size: 16, color: Colors.white70),
-                                ),
+                              ),
+                              const SizedBox(height: 8),
+
+                              // Modo explorador de sedes de la empresa activa
+                              _buildGlassIconButton(
+                                icon: Icons.domain_rounded,
+                                color:
+                                    loc.isBranchExplorerActive
+                                        ? Colors.white
+                                        : Colors.white60,
+                                tooltip:
+                                    'Sedes de ${loc.selectedCompany.shortName}',
+                                onTap: () {
+                                  final cubit = context.read<LocationCubit>();
+                                  if (!loc.isBranchExplorerActive) {
+                                    cubit.toggleBranchExplorer();
+                                    if (loc.companyBranches.isNotEmpty) {
+                                      _recenter(
+                                        loc
+                                            .activeMapBranch
+                                            .geozones
+                                            .first
+                                            .coordinates,
+                                      );
+                                    }
+                                  } else {
+                                    _showCompanyBranchesSheet(context, loc);
+                                  }
+                                },
+                              ),
+                              const SizedBox(height: 8),
+
+                              // Alternar visibilidad de geocercas
+                              _buildGlassIconButton(
+                                icon:
+                                    loc.showAllGeozones
+                                        ? Icons.layers_rounded
+                                        : Icons.layers_clear_rounded,
+                                color:
+                                    loc.showAllGeozones
+                                        ? Colors.white
+                                        : Colors.white60,
+                                tooltip: 'Mostrar/Ocultar Geozonas',
+                                onTap:
+                                    () =>
+                                        context
+                                            .read<LocationCubit>()
+                                            .toggleGeozonesVisibility(),
+                              ),
+                              const SizedBox(height: 8),
+
+                              // Sincronizar ubicacion del hardware GPS
+                              _buildGlassIconButton(
+                                icon: Icons.sync_rounded,
+                                tooltip: 'Sincronizar Ubicación GPS',
+                                onTap: () {
+                                  context
+                                      .read<LocationCubit>()
+                                      .syncDeviceLocation();
+                                  ScaffoldMessenger.of(
+                                    context,
+                                  ).hideCurrentSnackBar();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: const Row(
+                                        children: [
+                                          Icon(
+                                            Icons.gps_fixed_rounded,
+                                            color: Color(0xFF38BDF8),
+                                            size: 20,
+                                          ),
+                                          SizedBox(width: 10),
+                                          Expanded(
+                                            child: Text(
+                                              'Ubicación GPS sincronizada en tiempo real',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      backgroundColor: const Color(0xFF0F172A),
+                                      duration: const Duration(seconds: 2),
+                                      behavior: SnackBarBehavior.floating,
+                                      elevation: 6,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                        side: const BorderSide(
+                                          color: Color(0xFF334155),
+                                          width: 1,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                             ],
                           ),
                         ),
-                      ),
-                    ),
 
-                  // Controles flotantes del mapa
-                  Positioned(
-                    right: 16,
-                    top: toolButtonsTop,
-                    child: AsisGlassCard(
-                      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
-                      borderRadius: 22,
-                      isDark: true,
-                      customBackground: const Color(0xDD0D131F),
-                      customBorderColor: const Color(0x33FFFFFF),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Centrar en la ubicacion real del usuario
-                          _buildGlassIconButton(
-                            icon: Icons.my_location_rounded,
-                            tooltip: 'Centrar en mi ubicación',
-                            onTap: () {
-                              _recenter(loc.userPosition);
-                            },
-                          ),
-                          const SizedBox(height: 6),
+                        // Barra inferior dinamica de marcacion de asistencia
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 16,
+                          child: Center(
+                            child: AttendanceActionDock(
+                              phase:
+                                  attendanceState is AttendanceLoaded
+                                      ? attendanceState.currentPhase
+                                      : ShiftPhase.notStarted,
+                              todayRecords:
+                                  attendanceState is AttendanceLoaded
+                                      ? attendanceState.todayRecords
+                                      : [],
+                              lastRecord:
+                                  attendanceState is AttendanceLoaded
+                                      ? attendanceState.lastRecord
+                                      : null,
+                              isInsideGeozone: loc.isInsideGeozone,
+                              onPrimaryActionPressed: () {
+                                final currentPhase =
+                                    attendanceState is AttendanceLoaded
+                                        ? attendanceState.currentPhase
+                                        : ShiftPhase.notStarted;
+                                final nextType =
+                                    currentPhase.nextExpectedAttendance;
+                                if (nextType == null) return;
 
-                          // Modo explorador de sedes de la empresa activa
-                          _buildGlassIconButton(
-                            icon: Icons.domain_rounded,
-                            color: loc.isBranchExplorerActive ? AppColors.accent : Colors.white70,
-                            tooltip: 'Sedes de ${loc.selectedCompany.shortName}',
-                            onTap: () {
-                              final cubit = context.read<LocationCubit>();
-                              if (!loc.isBranchExplorerActive) {
-                                cubit.toggleBranchExplorer();
-                                if (loc.companyBranches.isNotEmpty) {
-                                  _recenter(loc.activeMapBranch.geozones.first.coordinates);
+                                // Evaluacion de seguridad anti fake GPS
+                                if (loc.isBlockedBySecurity) {
+                                  _showMockGpsSecurityDialog(context, loc);
+                                  return;
                                 }
-                              } else {
-                                _showCompanyBranchesSheet(context, loc);
-                              }
-                            },
+
+                                // Evaluacion de radio de geocerca autorizada
+                                if (!loc.isInsideGeozone) {
+                                  _showGeozoneRestrictionDialog(
+                                    context,
+                                    loc,
+                                    nextType,
+                                  );
+                                  return;
+                                }
+
+                                // Apertura del modal simplificado de asistencia
+                                final isOffline =
+                                    attendanceState is AttendanceLoaded &&
+                                    attendanceState.isOffline;
+                                _openAttendanceModal(
+                                  context: context,
+                                  // Durante el turno activo tambien se permite la salida anticipada
+                                  options: [
+                                    nextType,
+                                    if (currentPhase == ShiftPhase.working)
+                                      AttendanceType.checkOut,
+                                  ],
+                                  locationState: loc,
+                                  userId: userId,
+                                  isOffline: isOffline,
+                                );
+                              },
+                            ),
                           ),
-                          const SizedBox(height: 6),
-
-                          // Alternar visibilidad de geocercas
-                          _buildGlassIconButton(
-                            icon: loc.showAllGeozones
-                                ? Icons.layers_rounded
-                                : Icons.layers_clear_rounded,
-                            color: loc.showAllGeozones ? AppColors.accent : Colors.white70,
-                            tooltip: 'Mostrar/Ocultar Geozonas',
-                            onTap: () => context.read<LocationCubit>().toggleGeozonesVisibility(),
-                          ),
-                          const SizedBox(height: 6),
-
-                          // Sincronizar ubicacion del hardware GPS
-                          _buildGlassIconButton(
-                            icon: Icons.sync_rounded,
-                            tooltip: 'Sincronizar Ubicación GPS',
-                            onTap: () {
-                              context.read<LocationCubit>().syncDeviceLocation();
-                              ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: const Row(
-                                    children: [
-                                      Icon(Icons.gps_fixed_rounded, color: Color(0xFF38BDF8), size: 20),
-                                      SizedBox(width: 10),
-                                      Expanded(
-                                        child: Text(
-                                          'Ubicación GPS sincronizada en tiempo real',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  backgroundColor: const Color(0xFF0F172A),
-                                  duration: const Duration(seconds: 2),
-                                  behavior: SnackBarBehavior.floating,
-                                  elevation: 6,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                    side: const BorderSide(color: Color(0xFF334155), width: 1),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // Barra inferior dinamica de marcacion de asistencia
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    child: SafeArea(
-                      child: AttendanceActionDock(
-                        phase: attendanceState is AttendanceLoaded
-                            ? attendanceState.currentPhase
-                            : ShiftPhase.notStarted,
-                        todayRecords: attendanceState is AttendanceLoaded
-                            ? attendanceState.todayRecords
-                            : [],
-                        lastRecord: attendanceState is AttendanceLoaded
-                            ? attendanceState.lastRecord
-                            : null,
-                        isInsideGeozone: loc.isInsideGeozone,
-                        onPrimaryActionPressed: () {
-                          final currentPhase = attendanceState is AttendanceLoaded
-                              ? attendanceState.currentPhase
-                              : ShiftPhase.notStarted;
-                          final nextType = currentPhase.nextExpectedAttendance;
-                          if (nextType == null) return;
-
-                          // Evaluacion de seguridad anti fake GPS
-                          if (loc.isBlockedBySecurity) {
-                            _showMockGpsSecurityDialog(context, loc);
-                            return;
-                          }
-
-                          // Evaluacion de radio de geocerca autorizada
-                          if (!loc.isInsideGeozone) {
-                            _showGeozoneRestrictionDialog(context, loc, nextType);
-                            return;
-                          }
-
-                          // Apertura del modal simplificado de asistencia
-                          final isOffline = attendanceState is AttendanceLoaded && attendanceState.isOffline;
-                          _openAttendanceModal(
-                            context: context,
-                            type: nextType,
-                            locationState: loc,
-                            userId: userId,
-                            isOffline: isOffline,
-                          );
-                        },
-                        onSecondaryActionPressed: () {
-                          // Evaluacion de seguridad anti fake GPS
-                          if (loc.isBlockedBySecurity) {
-                            _showMockGpsSecurityDialog(context, loc);
-                            return;
-                          }
-
-                          // Evaluacion de radio de geocerca autorizada
-                          if (!loc.isInsideGeozone) {
-                            _showGeozoneRestrictionDialog(
-                              context,
-                              loc,
-                              AttendanceType.checkOut,
-                            );
-                            return;
-                          }
-
-                          // Apertura del modal para salida anticipada
-                          final isOffline = attendanceState is AttendanceLoaded && attendanceState.isOffline;
-                          _openAttendanceModal(
-                            context: context,
-                            type: AttendanceType.checkOut,
-                            locationState: loc,
-                            userId: userId,
-                            isOffline: isOffline,
-                          );
-                        },
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -842,22 +840,170 @@ class _MapHomeViewState extends State<MapHomeView> {
     );
   }
 
+  /// Cabecera roja: avatar, nombre del colaborador, empresa activa y menu de sucursales.
+  Widget _buildHeader(
+    BuildContext context,
+    LocationLoaded loc,
+    String? userName,
+  ) {
+    final name =
+        (userName == null || userName.isEmpty) ? 'Colaborador' : userName;
+
+    void openBranches() {
+      HapticFeedbackService.shared.selectionClick();
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder:
+              (routeContext) => BranchesView(
+                onBranchSelected: (branch) {
+                  Navigator.of(routeContext).pop();
+                  if (branch.geozones.isNotEmpty) {
+                    _recenter(branch.geozones.first.coordinates);
+                  }
+                },
+              ),
+        ),
+      );
+    }
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Container(
+        color: AppColors.primary,
+        padding: EdgeInsets.fromLTRB(
+          16,
+          MediaQuery.of(context).padding.top + 6,
+          4,
+          10,
+        ),
+        child: Row(
+          children: [
+            Stack(
+              children: [
+                CircleAvatar(
+                  radius: 22,
+                  backgroundColor: Colors.white,
+                  child: Text(
+                    name.substring(0, 1).toUpperCase(),
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    width: 13,
+                    height: 13,
+                    decoration: BoxDecoration(
+                      color:
+                          loc.isBlockedBySecurity
+                              ? AppColors.checkOutColor
+                              : loc.isInsideGeozone
+                              ? AppColors.success
+                              : AppColors.lunchColor,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: openBranches,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      name,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.business_rounded,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            loc.selectedCompany.name,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            IconButton(
+              icon: const Icon(
+                Icons.menu_rounded,
+                color: Colors.white,
+                size: 30,
+              ),
+              tooltip: 'Sucursales',
+              onPressed: openBranches,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildGlassIconButton({
     required IconData icon,
     required String tooltip,
     required VoidCallback onTap,
     Color color = Colors.white,
   }) {
-    return IconButton(
-      icon: Icon(icon, color: color, size: 20),
-      tooltip: tooltip,
-      constraints: const BoxConstraints(minWidth: 38, minHeight: 38),
-      padding: EdgeInsets.zero,
-      visualDensity: VisualDensity.compact,
-      onPressed: () {
-        HapticFeedbackService.shared.selectionClick();
-        onTap();
-      },
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: AppColors.primary,
+        elevation: 3,
+        shadowColor: Colors.black38,
+        borderRadius: BorderRadius.circular(10),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: () {
+            HapticFeedbackService.shared.selectionClick();
+            onTap();
+          },
+          child: SizedBox(
+            width: 42,
+            height: 42,
+            child: Icon(icon, color: color, size: 22),
+          ),
+        ),
+      ),
     );
   }
 
@@ -872,7 +1018,10 @@ class _MapHomeViewState extends State<MapHomeView> {
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF131926) : Colors.white,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            border: isDark ? Border.all(color: const Color(0x33FFFFFF), width: 0.8) : null,
+            border:
+                isDark
+                    ? Border.all(color: const Color(0x33FFFFFF), width: 0.8)
+                    : null,
           ),
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
           child: Column(
@@ -896,7 +1045,9 @@ class _MapHomeViewState extends State<MapHomeView> {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: loc.selectedCompany.primaryColor.withValues(alpha: 0.18),
+                      color: loc.selectedCompany.primaryColor.withValues(
+                        alpha: 0.18,
+                      ),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Center(
@@ -922,14 +1073,18 @@ class _MapHomeViewState extends State<MapHomeView> {
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
-                            color: isDark ? Colors.white : AppColors.textPrimary,
+                            color:
+                                isDark ? Colors.white : AppColors.textPrimary,
                           ),
                         ),
                         Text(
                           '${loc.companyBranches.length} sedes registradas en Lima',
                           style: TextStyle(
                             fontSize: 11,
-                            color: isDark ? AppColors.textMuted : AppColors.textSecondary,
+                            color:
+                                isDark
+                                    ? AppColors.textMuted
+                                    : AppColors.textSecondary,
                           ),
                         ),
                       ],
@@ -952,14 +1107,20 @@ class _MapHomeViewState extends State<MapHomeView> {
                     return Container(
                       margin: const EdgeInsets.only(bottom: 8),
                       decoration: BoxDecoration(
-                        color: isCurrent
-                            ? AppColors.accent.withValues(alpha: 0.12)
-                            : (isDark ? const Color(0xFF0D131F) : const Color(0xFFF8FAFC)),
+                        color:
+                            isCurrent
+                                ? AppColors.accent.withValues(alpha: 0.12)
+                                : (isDark
+                                    ? const Color(0xFF0D131F)
+                                    : const Color(0xFFF8FAFC)),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: isCurrent
-                              ? AppColors.accent
-                              : (isDark ? const Color(0x22FFFFFF) : AppColors.borderLight),
+                          color:
+                              isCurrent
+                                  ? AppColors.accent
+                                  : (isDark
+                                      ? const Color(0x22FFFFFF)
+                                      : AppColors.borderLight),
                           width: isCurrent ? 1.5 : 0.8,
                         ),
                       ),
@@ -967,40 +1128,63 @@ class _MapHomeViewState extends State<MapHomeView> {
                         dense: true,
                         leading: Icon(
                           Icons.location_city_rounded,
-                          color: isCurrent ? AppColors.accent : (isDark ? Colors.white60 : AppColors.textSecondary),
+                          color:
+                              isCurrent
+                                  ? AppColors.accent
+                                  : (isDark
+                                      ? Colors.white60
+                                      : AppColors.textSecondary),
                         ),
                         title: Text(
                           branch.name,
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
-                            color: isCurrent ? AppColors.accent : (isDark ? Colors.white : AppColors.textPrimary),
+                            color:
+                                isCurrent
+                                    ? AppColors.accent
+                                    : (isDark
+                                        ? Colors.white
+                                        : AppColors.textPrimary),
                           ),
                         ),
                         subtitle: Text(
                           '${branch.address} • ${branch.geozones.length} centros autorizados',
                           style: TextStyle(
                             fontSize: 11,
-                            color: isDark ? AppColors.textMuted : AppColors.textSecondary,
+                            color:
+                                isDark
+                                    ? AppColors.textMuted
+                                    : AppColors.textSecondary,
                           ),
                         ),
-                        trailing: isCurrent
-                            ? Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: AppColors.accent.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: const Text(
-                                  'ACTIVA',
-                                  style: TextStyle(
-                                    color: AppColors.accent,
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w800,
+                        trailing:
+                            isCurrent
+                                ? Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
                                   ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.accent.withValues(
+                                      alpha: 0.2,
+                                    ),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: const Text(
+                                    'ACTIVA',
+                                    style: TextStyle(
+                                      color: AppColors.accent,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                )
+                                : const Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  color: AppColors.textMuted,
+                                  size: 14,
                                 ),
-                              )
-                            : const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white30, size: 14),
                         onTap: () {
                           HapticFeedbackService.shared.selectionClick();
                           Navigator.pop(ctx);

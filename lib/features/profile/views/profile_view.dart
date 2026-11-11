@@ -33,7 +33,7 @@ class _ProfileViewState extends State<ProfileView> {
       backgroundColor: isDark ? AppColors.obsidianCanvas : AppColors.backgroundLight,
       appBar: AppBar(
         title: const Text('Mi Perfil'),
-        backgroundColor: isDark ? AppColors.obsidianCanvas : Colors.white,
+        backgroundColor: isDark ? AppColors.obsidianCanvas : AppColors.primary,
         elevation: 0,
       ),
       body: BlocBuilder<AuthCubit, AuthState>(
@@ -289,7 +289,7 @@ class _ProfileViewState extends State<ProfileView> {
                         decoration: BoxDecoration(
                           color: AppColors.accent.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
+                          border: Border.all(color: AppColors.borderLight),
                         ),
                         child: Row(
                           children: [

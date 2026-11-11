@@ -152,9 +152,8 @@ class AsisGoApp extends StatelessWidget {
         child: MaterialApp(
           title: 'AsisGo',
           debugShowCheckedModeBanner: false,
-          theme: AppTheme.darkTheme,
-          darkTheme: AppTheme.darkTheme,
-          themeMode: ThemeMode.dark,
+          theme: AppTheme.lightTheme,
+          themeMode: ThemeMode.light,
           home: BlocBuilder<AuthCubit, AuthState>(
             builder: (context, state) {
               if (state is Authenticated || state is AuthSessionExpired) {
@@ -162,7 +161,7 @@ class AsisGoApp extends StatelessWidget {
               }
               if (state is AuthLoading) {
                 return const Scaffold(
-                  backgroundColor: AppColors.obsidianCanvas,
+                  backgroundColor: AppColors.backgroundLight,
                   body: AsisLoadingOverlay(
                     skeleton: AsisLoginSkeleton(),
                     message: 'Iniciando sesión en AsisGo...',

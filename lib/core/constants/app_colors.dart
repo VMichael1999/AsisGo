@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Color primario corporativo
-  static const Color primary = Color(0xFF1E293B);
-  static const Color primaryDark = Color(0xFF0F172A);
-  static const Color primaryLight = Color(0xFF334155);
-  
-  // Color de enfasis (esmeralda)
-  static const Color accent = Color(0xFF10B981);
-  static const Color accentDark = Color(0xFF059669);
-  static const Color accentLight = Color(0xFFD1FAE5);
+  // Color primario corporativo (azul marino)
+  static const Color primary = Color(0xFF1E3A8A);
+  static const Color primaryDark = Color(0xFF172554);
+  static const Color primaryLight = Color(0xFF3355C4);
+
+  // Color de enfasis de marca (mismo azul corporativo)
+  static const Color accent = Color(0xFF1E3A8A);
+  static const Color accentDark = Color(0xFF172554);
+  static const Color accentLight = Color(0xFFE3EAFB);
+
+  // Estado positivo (dentro de geocerca, sincronizado, confirmaciones)
+  static const Color success = Color(0xFF10B981);
   
   // Colores secundarios
   static const Color indigoAccent = Color(0xFF6366F1);

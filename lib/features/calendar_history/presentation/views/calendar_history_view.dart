@@ -42,7 +42,7 @@ class _CalendarHistoryViewState extends State<CalendarHistoryView> {
       backgroundColor: isDark ? AppColors.obsidianCanvas : AppColors.backgroundLight,
       appBar: AppBar(
         title: const Text('Historial de Asistencia'),
-        backgroundColor: isDark ? AppColors.obsidianCanvas : Colors.white,
+        backgroundColor: isDark ? AppColors.obsidianCanvas : AppColors.primary,
         elevation: 0,
         actions: [
           IconButton(
@@ -178,6 +178,7 @@ class _CalendarHistoryViewState extends State<CalendarHistoryView> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
                     child: TableCalendar(
+                      locale: 'es',
                       firstDay: DateTime.utc(2025, 1, 1),
                       lastDay: DateTime.utc(2030, 12, 31),
                       focusedDay: calendarData.focusedDay,

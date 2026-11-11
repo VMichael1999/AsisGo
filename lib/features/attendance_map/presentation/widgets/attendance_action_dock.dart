@@ -1,15 +1,12 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/haptic_feedback_service.dart';
-import '../../../../core/utils/date_formatter.dart';
-import '../../../../core/widgets/asis_action_button.dart';
-import '../../../../core/widgets/asis_glass_card.dart';
-import '../../../../core/widgets/asis_status_badge.dart';
 import '../../domain/attendance_record.dart';
 import '../../domain/shift_phase.dart';
 
-class AttendanceActionDock extends StatefulWidget {
+/// Boton central "Registrar" del mapa. La marcacion que abre depende de la
+/// fase del turno (entrada, refrigerio, salida).
+class AttendanceActionDock extends StatelessWidget {
   final ShiftPhase phase;
   final List<AttendanceRecord> todayRecords;
   final AttendanceRecord? lastRecord;
@@ -28,144 +25,86 @@ class AttendanceActionDock extends StatefulWidget {
   });
 
   @override
-  State<AttendanceActionDock> createState() => _AttendanceActionDockState();
-}
-
-class _AttendanceActionDockState extends State<AttendanceActionDock> {
-  late Timer _clockTimer;
-  DateTime _currentTime = DateTime.now();
-
-  @override
-  void initState() {
-    super.initState();
-    _clockTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) {
-        setState(() => _currentTime = DateTime.now());
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _clockTimer.cancel();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final isCompleted = widget.phase == ShiftPhase.completed;
+    final isCompleted = phase == ShiftPhase.completed;
+    final nextType = phase.nextExpectedAttendance;
 
-    return AsisGlassCard(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      padding: const EdgeInsets.all(16),
-      borderRadius: 24,
-      isDark: true,
-      customBackground: const Color(0xEA0D131F),
-      customBorderColor: const Color(0x33FFFFFF),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Encabezado del dock: indicador de fase actual y reloj digital en vivo
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              AsisStatusBadge(
-                label: widget.phase.statusBadgeLabel.toUpperCase(),
-                showRadar: !isCompleted,
-                customColor: widget.phase.buttonColor,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              ),
-              Row(
-                children: [
-                  const Icon(Icons.schedule_rounded, size: 14, color: AppColors.textMuted),
-                  const SizedBox(width: 4),
-                  Text(
-                    DateFormatter.formatTime(_currentTime),
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Colors.white,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Opcion secundaria: salida anticipada cuando el turno esta activo
+        if (phase == ShiftPhase.working && onSecondaryActionPressed != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Material(
+              color: Colors.white,
+              elevation: 2,
+              borderRadius: BorderRadius.circular(20),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(20),
+                onTap: () {
+                  HapticFeedbackService.shared.selectionClick();
+                  onSecondaryActionPressed!();
+                },
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  child: Text(
+                    '¿Deseas marcar salida anticipada?',
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      letterSpacing: 0.5,
-                      fontFeatures: [FontFeature.tabularFigures()],
                     ),
                   ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-
-          // Resumen de la ultima marcacion registrada
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                widget.lastRecord != null
-                    ? 'Último: ${widget.lastRecord!.type.shortName} (${DateFormatter.formatTime(widget.lastRecord!.timestamp)})'
-                    : 'Sin marcas registradas hoy',
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: AppColors.textMuted,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              if (widget.todayRecords.isNotEmpty)
-                Text(
-                  '${widget.todayRecords.length} / 4 marcas',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: AppColors.textMuted,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          // Boton principal de marcacion segun la fase del turno
-          AsisActionButton(
-            label: isCompleted ? 'Jornada Finalizada' : widget.phase.buttonLabel,
-            icon: isCompleted
-                ? Icons.check_circle_rounded
-                : (widget.phase.nextExpectedAttendance?.icon ?? Icons.fingerprint_rounded),
-            onPressed: isCompleted
-                ? null
-                : () {
-                    HapticFeedbackService.shared.selectionClick();
-                    widget.onPrimaryActionPressed();
-                  },
-            backgroundColor: widget.phase.buttonColor,
-            disabledBackgroundColor: isCompleted ? const Color(0xFF059669) : null,
-            disabledTextColor: Colors.white,
-            borderSide: isCompleted
-                ? const BorderSide(color: Color(0xFF34D399), width: 1.5)
-                : null,
-            height: 52,
-            borderRadius: 16,
-          ),
-
-          // Opcion secundaria: salida anticipada cuando el turno esta activo
-          if (widget.phase == ShiftPhase.working &&
-              widget.onSecondaryActionPressed != null) ...[
-            const SizedBox(height: 6),
-            TextButton.icon(
-              onPressed: () {
-                HapticFeedbackService.shared.selectionClick();
-                widget.onSecondaryActionPressed!();
-              },
-              icon: const Icon(Icons.exit_to_app_rounded, size: 15, color: Color(0xFFFCA5A5)),
-              label: const Text(
-                '¿Deseas marcar salida anticipada?',
-                style: TextStyle(
-                  color: Color(0xFFFCA5A5),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
-          ],
-        ],
-      ),
+          ),
+
+        // Boton principal de marcacion
+        ElevatedButton(
+          onPressed:
+              isCompleted
+                  ? null
+                  : () {
+                    HapticFeedbackService.shared.selectionClick();
+                    onPrimaryActionPressed();
+                  },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            disabledBackgroundColor: AppColors.completedColor,
+            disabledForegroundColor: Colors.white,
+            elevation: 4,
+            minimumSize: const Size(190, 56),
+            padding: const EdgeInsets.symmetric(horizontal: 28),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                isCompleted ? 'Jornada Finalizada' : 'Registrar',
+                style: TextStyle(
+                  fontSize: isCompleted ? 16 : 20,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              if (nextType != null)
+                Text(
+                  nextType.shortName,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white70,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

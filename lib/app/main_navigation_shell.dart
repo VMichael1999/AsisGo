@@ -84,12 +84,13 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
 
             return Container(
               decoration: const BoxDecoration(
-                color: Color(0xFF0D131F),
+                color: Colors.white,
                 border: Border(
-                  top: BorderSide(color: Color(0x22FFFFFF), width: 0.8),
+                  top: BorderSide(color: AppColors.borderLight, width: 0.8),
                 ),
               ),
               child: SafeArea(
+                bottom: false,
                 child: NavigationBar(
                   selectedIndex: _currentIndex,
                   onDestinationSelected: (index) {
@@ -102,27 +103,25 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                       context.read<CalendarCubit>().loadCalendarData(userId);
                     }
                   },
-                  backgroundColor: const Color(0xFF0D131F),
                   elevation: 0,
-                  indicatorColor: AppColors.accent.withValues(alpha: 0.2),
                   destinations: const [
                     NavigationDestination(
-                      icon: Icon(Icons.map_outlined, color: Colors.white60),
+                      icon: Icon(Icons.map_outlined, color: AppColors.textSecondary),
                       selectedIcon: Icon(Icons.map_rounded, color: AppColors.accent),
                       label: 'Asistencia',
                     ),
                     NavigationDestination(
-                      icon: Icon(Icons.calendar_month_outlined, color: Colors.white60),
+                      icon: Icon(Icons.calendar_month_outlined, color: AppColors.textSecondary),
                       selectedIcon: Icon(Icons.calendar_month_rounded, color: AppColors.accent),
                       label: 'Calendario',
                     ),
                     NavigationDestination(
-                      icon: Icon(Icons.apartment_outlined, color: Colors.white60),
+                      icon: Icon(Icons.apartment_outlined, color: AppColors.textSecondary),
                       selectedIcon: Icon(Icons.apartment_rounded, color: AppColors.accent),
                       label: 'Sucursales',
                     ),
                     NavigationDestination(
-                      icon: Icon(Icons.person_outline_rounded, color: Colors.white60),
+                      icon: Icon(Icons.person_outline_rounded, color: AppColors.textSecondary),
                       selectedIcon: Icon(Icons.person_rounded, color: AppColors.accent),
                       label: 'Mi Perfil',
                     ),

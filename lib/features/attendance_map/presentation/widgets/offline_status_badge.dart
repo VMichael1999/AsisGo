@@ -63,15 +63,15 @@ class _OfflineStatusBadgeState extends State<OfflineStatusBadge>
     }
 
     final isOffline = widget.isOffline;
-    final badgeColor = isOffline ? const Color(0xFFF59E0B) : AppColors.accent;
+    final badgeColor = isOffline ? const Color(0xFFF59E0B) : AppColors.infoColor;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: AsisGlassCard(
         borderRadius: 16,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        isDark: true,
-        customBackground: isOffline ? const Color(0xEE1E160C) : const Color(0xEE0B1A28),
+        isDark: false,
+        customBackground: const Color(0xF5FFFFFF),
         customBorderColor: badgeColor.withValues(alpha: 0.4),
         child: Row(
           children: [
@@ -116,7 +116,7 @@ class _OfflineStatusBadgeState extends State<OfflineStatusBadge>
                             : 'Marcas se guardarán y enviarán al volver la red')
                         : '${widget.pendingSyncCount} registro(s) por sincronizar con el servidor',
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
                     ),
@@ -136,19 +136,19 @@ class _OfflineStatusBadgeState extends State<OfflineStatusBadge>
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.accent.withValues(alpha: 0.2),
+                    color: AppColors.infoColor.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.accent.withValues(alpha: 0.4)),
+                    border: Border.all(color: AppColors.infoColor.withValues(alpha: 0.4)),
                   ),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.sync_rounded, size: 13, color: AppColors.accent),
+                      Icon(Icons.sync_rounded, size: 13, color: AppColors.infoColor),
                       SizedBox(width: 4),
                       Text(
                         'Sincronizar',
                         style: TextStyle(
-                          color: AppColors.accent,
+                          color: AppColors.infoColor,
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                         ),

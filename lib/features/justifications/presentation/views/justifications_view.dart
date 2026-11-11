@@ -82,7 +82,7 @@ class _JustificationsViewState extends State<JustificationsView> {
           backgroundColor: isDark ? AppColors.obsidianCanvas : AppColors.backgroundLight,
           appBar: AppBar(
             title: const Text('Mis Justificaciones'),
-            backgroundColor: isDark ? AppColors.obsidianCanvas : Colors.white,
+            backgroundColor: isDark ? AppColors.obsidianCanvas : AppColors.primary,
             elevation: 0,
             actions: [
               IconButton(
