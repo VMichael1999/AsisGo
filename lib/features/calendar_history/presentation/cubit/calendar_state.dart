@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:asisgo/features/attendance_map/domain/attendance_record.dart';
+import 'package:asisgo/features/calendar_history/domain/attendance_day_summary.dart';
 
 abstract class CalendarState extends Equatable {
   const CalendarState();
@@ -16,51 +17,55 @@ class CalendarLoaded extends CalendarState {
   final DateTime selectedDay;
   final DateTime focusedDay;
   final List<AttendanceRecord> allRecords;
-  final List<AttendanceRecord> selectedDayRecords;
-  final Duration totalWorkedDuration;
-  final int totalDaysWorkedThisMonth;
-  final double punctualityRate;
+
+  /// Resumen por dia, con clave `yyyy-m-d`.
+  final Map<String, AttendanceDaySummary> daySummaries;
+
+  /// Totales del mes visible en el calendario.
+  final MonthSummary monthSummary;
 
   const CalendarLoaded({
     required this.selectedDay,
     required this.focusedDay,
     required this.allRecords,
-    required this.selectedDayRecords,
-    required this.totalWorkedDuration,
-    required this.totalDaysWorkedThisMonth,
-    required this.punctualityRate,
+    required this.daySummaries,
+    required this.monthSummary,
   });
+
+  static String keyOf(DateTime day) => '${day.year}-${day.month}-${day.day}';
+
+  AttendanceDaySummary? summaryFor(DateTime day) => daySummaries[keyOf(day)];
+
+  AttendanceDaySummary? get selectedDaySummary => summaryFor(selectedDay);
+
+  List<AttendanceRecord> get selectedDayRecords =>
+      selectedDaySummary?.records ?? const [];
 
   CalendarLoaded copyWith({
     DateTime? selectedDay,
     DateTime? focusedDay,
-    List<AttendanceRecord>? allRecords,
-    List<AttendanceRecord>? selectedDayRecords,
-    Duration? totalWorkedDuration,
-    int? totalDaysWorkedThisMonth,
-    double? punctualityRate,
+    MonthSummary? monthSummary,
   }) {
     return CalendarLoaded(
       selectedDay: selectedDay ?? this.selectedDay,
       focusedDay: focusedDay ?? this.focusedDay,
-      allRecords: allRecords ?? this.allRecords,
-      selectedDayRecords: selectedDayRecords ?? this.selectedDayRecords,
-      totalWorkedDuration: totalWorkedDuration ?? this.totalWorkedDuration,
-      totalDaysWorkedThisMonth: totalDaysWorkedThisMonth ?? this.totalDaysWorkedThisMonth,
-      punctualityRate: punctualityRate ?? this.punctualityRate,
+      allRecords: allRecords,
+      daySummaries: daySummaries,
+      monthSummary: monthSummary ?? this.monthSummary,
     );
   }
 
   @override
   List<Object?> get props => [
-        selectedDay,
-        focusedDay,
-        allRecords,
-        selectedDayRecords,
-        totalWorkedDuration,
-        totalDaysWorkedThisMonth,
-        punctualityRate,
-      ];
+    selectedDay,
+    focusedDay,
+    allRecords,
+    daySummaries,
+    monthSummary.month,
+    monthSummary.daysAttended,
+    monthSummary.lateDays,
+    monthSummary.worked,
+  ];
 }
 
 class CalendarError extends CalendarState {

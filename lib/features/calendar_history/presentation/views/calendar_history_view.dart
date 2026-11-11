@@ -1,18 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:asisgo/core/constants/app_colors.dart';
 import 'package:asisgo/core/utils/date_formatter.dart';
+import 'package:asisgo/core/services/haptic_feedback_service.dart';
+import 'package:asisgo/core/widgets/asis_shimmer.dart';
+import 'package:asisgo/core/widgets/asis_skeletons.dart';
 import 'package:asisgo/features/attendance_map/domain/attendance_record.dart';
 import 'package:asisgo/features/attendance_map/domain/shift_phase.dart';
 import 'package:asisgo/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:asisgo/features/calendar_history/domain/attendance_day_summary.dart';
 import 'package:asisgo/features/calendar_history/presentation/cubit/calendar_cubit.dart';
 import 'package:asisgo/features/calendar_history/presentation/cubit/calendar_state.dart';
 import 'package:asisgo/features/justifications/presentation/views/justifications_view.dart';
 import 'package:asisgo/features/justifications/presentation/widgets/new_justification_sheet.dart';
-import 'package:asisgo/core/services/haptic_feedback_service.dart';
-import 'package:asisgo/core/widgets/asis_shimmer.dart';
-import 'package:asisgo/core/widgets/asis_skeletons.dart';
+
+/// Colores y textos de cada estado de jornada (siempre acompanados de texto).
+extension DayStatusStyle on DayStatus {
+  Color get color => switch (this) {
+    DayStatus.complete => const Color(0xFF047857),
+    DayStatus.late => const Color(0xFFB45309),
+    DayStatus.incomplete => AppColors.checkOutColor,
+    DayStatus.inProgress => AppColors.primary,
+  };
+
+  String get label => switch (this) {
+    DayStatus.complete => 'Completa',
+    DayStatus.late => 'Con tardanza',
+    DayStatus.incomplete => 'Incompleta',
+    DayStatus.inProgress => 'En curso',
+  };
+}
 
 class CalendarHistoryView extends StatefulWidget {
   const CalendarHistoryView({super.key});
@@ -22,44 +41,38 @@ class CalendarHistoryView extends StatefulWidget {
 }
 
 class _CalendarHistoryViewState extends State<CalendarHistoryView> {
+  // Deslizar el calendario arriba/abajo alterna entre estas vistas.
   CalendarFormat _calendarFormat = CalendarFormat.twoWeeks;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final authState = context.read<AuthCubit>().state;
-      final userId = authState.currentUser?.id ?? 'USR-001';
-      context.read<CalendarCubit>().loadCalendarData(userId);
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _reload());
+  }
+
+  Future<void> _reload() {
+    final user = context.read<AuthCubit>().state.currentUser;
+    return context.read<CalendarCubit>().loadCalendarData(
+      user?.id ?? 'USR-001',
+      shiftStartTime: user?.shiftStartTime,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
-      backgroundColor: isDark ? AppColors.obsidianCanvas : AppColors.backgroundLight,
+      backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
-        title: const Text('Historial de Asistencia'),
-        backgroundColor: isDark ? AppColors.obsidianCanvas : AppColors.primary,
+        title: const Text('Historial'),
+        backgroundColor: AppColors.primary,
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.assignment_turned_in_rounded),
-            tooltip: 'Mis Justificaciones',
+            icon: const Icon(Icons.assignment_outlined),
+            tooltip: 'Mis justificaciones',
             onPressed: () {
               HapticFeedbackService.shared.selectionClick();
               Navigator.push(context, JustificationsView.route());
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Actualizar',
-            onPressed: () {
-              final authState = context.read<AuthCubit>().state;
-              final userId = authState.currentUser?.id ?? 'USR-001';
-              context.read<CalendarCubit>().loadCalendarData(userId);
             },
           ),
         ],
@@ -69,7 +82,7 @@ class _CalendarHistoryViewState extends State<CalendarHistoryView> {
           if (state is CalendarLoading || state is CalendarInitial) {
             return const AsisLoadingOverlay(
               skeleton: AsisCalendarSkeleton(),
-              message: 'Cargando historial de asistencias...',
+              message: 'Cargando tu historial...',
             );
           }
 
@@ -77,309 +90,45 @@ class _CalendarHistoryViewState extends State<CalendarHistoryView> {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),
-                child: Text(
-                  state.message,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: isDark ? Colors.white : AppColors.textPrimary),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      state.message,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _reload,
+                      child: const Text('Reintentar'),
+                    ),
+                  ],
                 ),
               ),
             );
           }
 
-          final calendarData = state as CalendarLoaded;
+          final data = state as CalendarLoaded;
 
           return RefreshIndicator(
-            color: AppColors.accent,
-            onRefresh: () async {
-              final authState = context.read<AuthCubit>().state;
-              final userId = authState.currentUser?.id ?? 'USR-001';
-              await context.read<CalendarCubit>().loadCalendarData(userId);
-            },
+            color: AppColors.primary,
+            onRefresh: _reload,
             child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
               children: [
-                // Tarjetas de resumen de metricas clave (horas trabajadas, dias, puntualidad)
-                _buildMetricsHeader(calendarData, isDark),
+                _MonthSummaryCard(summary: data.monthSummary),
                 const SizedBox(height: 12),
-
-                // Banner de Justificación de Incidencias Laborales
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF131926) : Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: isDark ? const Color(0x33FFFFFF) : AppColors.borderLight,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(Icons.assignment_late_rounded, color: Color(0xFFF59E0B), size: 20),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '¿Tardanza o inasistencia?',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: isDark ? Colors.white : AppColors.textPrimary,
-                              ),
-                            ),
-                            Text(
-                              'Envía tu sustento con comprobante adjunto a RRHH',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: isDark ? AppColors.textMuted : AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          HapticFeedbackService.shared.selectionClick();
-                          NewJustificationSheet.show(context);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFF59E0B),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        ),
-                        child: const Text('Justificar', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 14),
-
-                // Tarjeta interactiva del calendario mensual
-                Card(
-                  clipBehavior: Clip.antiAlias,
-                  color: isDark ? const Color(0xFF131926) : Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(
-                      color: isDark ? const Color(0x33FFFFFF) : AppColors.borderLight,
-                    ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                    child: TableCalendar(
-                      locale: 'es',
-                      firstDay: DateTime.utc(2025, 1, 1),
-                      lastDay: DateTime.utc(2030, 12, 31),
-                      focusedDay: calendarData.focusedDay,
-                      calendarFormat: _calendarFormat,
-                      startingDayOfWeek: StartingDayOfWeek.monday,
-                      selectedDayPredicate: (day) {
-                        final a = calendarData.selectedDay.toLocal();
-                        final b = day.toLocal();
-                        return a.year == b.year && a.month == b.month && a.day == b.day;
-                      },
-                      onDaySelected: (selectedDay, focusedDay) {
-                        final authState = context.read<AuthCubit>().state;
-                        final userId = authState.currentUser?.id ?? 'USR-001';
-                        context.read<CalendarCubit>().selectDay(selectedDay, focusedDay, userId);
-                      },
-                      onFormatChanged: (format) {
-                        setState(() => _calendarFormat = format);
-                      },
-                      onPageChanged: (focusedDay) {
-                        context.read<CalendarCubit>().updateFocusedDay(focusedDay);
-                      },
-                      headerStyle: HeaderStyle(
-                        formatButtonVisible: true,
-                        titleCentered: true,
-                        formatButtonShowsNext: false,
-                        titleTextStyle: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: isDark ? Colors.white : AppColors.textPrimary,
-                        ),
-                        formatButtonDecoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF1E283D) : const Color(0xFFF1F5F9),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: isDark ? const Color(0x22FFFFFF) : Colors.transparent,
-                          ),
-                        ),
-                        formatButtonTextStyle: TextStyle(
-                          color: isDark ? AppColors.accent : AppColors.primary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        leftChevronIcon: Icon(
-                          Icons.chevron_left_rounded,
-                          color: isDark ? Colors.white70 : AppColors.textPrimary,
-                        ),
-                        rightChevronIcon: Icon(
-                          Icons.chevron_right_rounded,
-                          color: isDark ? Colors.white70 : AppColors.textPrimary,
-                        ),
-                      ),
-                      daysOfWeekStyle: DaysOfWeekStyle(
-                        weekdayStyle: TextStyle(
-                          color: isDark ? Colors.white70 : AppColors.textPrimary,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 12,
-                        ),
-                        weekendStyle: TextStyle(
-                          color: isDark ? Colors.white38 : AppColors.textSecondary,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 12,
-                        ),
-                      ),
-                      calendarStyle: CalendarStyle(
-                        defaultTextStyle: TextStyle(
-                          color: isDark ? Colors.white : AppColors.textPrimary,
-                        ),
-                        weekendTextStyle: TextStyle(
-                          color: isDark ? Colors.white60 : AppColors.textSecondary,
-                        ),
-                        outsideTextStyle: TextStyle(
-                          color: isDark ? Colors.white24 : AppColors.textMuted,
-                        ),
-                        selectedDecoration: const BoxDecoration(
-                          color: AppColors.accent,
-                          shape: BoxShape.circle,
-                        ),
-                        selectedTextStyle: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        todayDecoration: BoxDecoration(
-                          color: AppColors.accent.withValues(alpha: 0.25),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: AppColors.accent, width: 1),
-                        ),
-                        todayTextStyle: const TextStyle(
-                          color: AppColors.accent,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      eventLoader: (day) {
-                        final target = day.toLocal();
-                        return calendarData.allRecords.where((r) {
-                          final rLocal = r.timestamp.toLocal();
-                          return rLocal.year == target.year &&
-                              rLocal.month == target.month &&
-                              rLocal.day == target.day;
-                        }).toList();
-                      },
-                      calendarBuilders: CalendarBuilders(
-                        markerBuilder: (context, date, events) {
-                          if (events.isEmpty) return null;
-                          final records = events.cast<AttendanceRecord>();
-                          final hasCheckIn = records.any((r) => r.type == AttendanceType.checkIn);
-                          final hasCheckOut = records.any((r) => r.type == AttendanceType.checkOut);
-
-                          return Positioned(
-                            bottom: 2,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (hasCheckIn)
-                                  Container(
-                                    width: 5,
-                                    height: 5,
-                                    margin: const EdgeInsets.symmetric(horizontal: 1),
-                                    decoration: const BoxDecoration(
-                                      color: AppColors.checkInColor,
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                if (hasCheckOut)
-                                  Container(
-                                    width: 5,
-                                    height: 5,
-                                    margin: const EdgeInsets.symmetric(horizontal: 1),
-                                    decoration: const BoxDecoration(
-                                      color: AppColors.checkOutColor,
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Encabezado del registro diario
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Detalle: ${DateFormatter.formatFullDate(calendarData.selectedDay)}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: isDark ? Colors.white : AppColors.textPrimary,
-                      ),
-                    ),
-                    Text(
-                      '${calendarData.selectedDayRecords.length} marcaciones',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isDark ? AppColors.textMuted : AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-
-                // Lista de marcaciones registradas para el dia seleccionado
-                if (calendarData.selectedDayRecords.isEmpty)
-                  Container(
-                    padding: const EdgeInsets.all(28),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF131926) : Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isDark ? const Color(0x33FFFFFF) : AppColors.borderLight,
-                      ),
-                    ),
-                    child: Center(
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.event_busy_rounded,
-                            size: 44,
-                            color: isDark ? Colors.white38 : AppColors.textMuted,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'No se registraron marcaciones en esta fecha.',
-                            style: TextStyle(
-                              color: isDark ? AppColors.textMuted : AppColors.textSecondary,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                else
-                  ...calendarData.selectedDayRecords.map((record) {
-                    return _buildRecordTimelineTile(record, isDark);
-                  }),
+                _buildCalendarCard(context, data),
                 const SizedBox(height: 20),
+                _DayDetail(
+                  day: data.selectedDay,
+                  summary: data.selectedDaySummary,
+                ),
               ],
             ),
           );
@@ -388,220 +137,563 @@ class _CalendarHistoryViewState extends State<CalendarHistoryView> {
     );
   }
 
-  Widget _buildMetricsHeader(CalendarLoaded data, bool isDark) {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildMetricCard(
-            title: 'Días Asistidos',
-            value: '${data.totalDaysWorkedThisMonth}',
-            icon: Icons.calendar_today_rounded,
-            color: AppColors.accent,
-            isDark: isDark,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: _buildMetricCard(
-            title: 'Puntualidad',
-            value: '${data.punctualityRate.toStringAsFixed(0)}%',
-            icon: Icons.access_time_filled_rounded,
-            color: AppColors.indigoAccent,
-            isDark: isDark,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: _buildMetricCard(
-            title: 'Tiempo Total',
-            value: DateFormatter.formatDuration(data.totalWorkedDuration),
-            icon: Icons.timelapse_rounded,
-            color: AppColors.lunchColor,
-            isDark: isDark,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMetricCard({
-    required String title,
-    required String value,
-    required IconData icon,
-    required Color color,
-    required bool isDark,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF131926) : Colors.white,
+  Widget _buildCalendarCard(BuildContext context, CalendarLoaded data) {
+    return Material(
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isDark ? const Color(0x33FFFFFF) : AppColors.borderLight,
+        side: const BorderSide(color: AppColors.borderLight),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(8, 8, 8, 12),
+        child: Column(
+          children: [
+            TableCalendar<AttendanceDaySummary>(
+              locale: 'es',
+              firstDay: DateTime.utc(2025, 1, 1),
+              lastDay: DateTime.utc(2030, 12, 31),
+              focusedDay: data.focusedDay,
+              calendarFormat: _calendarFormat,
+              availableCalendarFormats: const {
+                CalendarFormat.month: 'Mes',
+                CalendarFormat.twoWeeks: '2 semanas',
+                CalendarFormat.week: 'Semana',
+              },
+              startingDayOfWeek: StartingDayOfWeek.monday,
+              selectedDayPredicate: (day) => isSameDay(day, data.selectedDay),
+              onDaySelected: (selectedDay, focusedDay) {
+                HapticFeedbackService.shared.selectionClick();
+                context.read<CalendarCubit>().selectDay(
+                  selectedDay,
+                  focusedDay,
+                );
+              },
+              onFormatChanged: (format) {
+                setState(() => _calendarFormat = format);
+              },
+              onPageChanged: (focusedDay) {
+                context.read<CalendarCubit>().updateFocusedDay(focusedDay);
+              },
+              eventLoader: (day) {
+                final summary = data.summaryFor(day);
+                return summary == null ? const [] : [summary];
+              },
+              headerStyle: HeaderStyle(
+                titleCentered: true,
+                formatButtonShowsNext: false,
+                titleTextFormatter:
+                    (date, locale) => toBeginningOfSentenceCase(
+                      DateFormat('MMMM yyyy', locale).format(date),
+                    ),
+                titleTextStyle: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+                formatButtonDecoration: BoxDecoration(
+                  color: AppColors.backgroundLight,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.borderLight),
+                ),
+                formatButtonTextStyle: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+                leftChevronIcon: const Icon(
+                  Icons.chevron_left_rounded,
+                  color: AppColors.textPrimary,
+                ),
+                rightChevronIcon: const Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              daysOfWeekStyle: const DaysOfWeekStyle(
+                weekdayStyle: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                ),
+                weekendStyle: TextStyle(
+                  color: AppColors.textMuted,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                ),
+              ),
+              calendarStyle: CalendarStyle(
+                defaultTextStyle: const TextStyle(color: AppColors.textPrimary),
+                weekendTextStyle: const TextStyle(
+                  color: AppColors.textSecondary,
+                ),
+                outsideTextStyle: const TextStyle(color: AppColors.textMuted),
+                // Seleccionado: relleno. Hoy: solo borde.
+                selectedDecoration: const BoxDecoration(
+                  color: AppColors.primary,
+                  shape: BoxShape.circle,
+                ),
+                selectedTextStyle: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+                todayDecoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.primary, width: 1.5),
+                ),
+                todayTextStyle: const TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              calendarBuilders: CalendarBuilders<AttendanceDaySummary>(
+                markerBuilder: (context, date, events) {
+                  if (events.isEmpty) return null;
+                  return Positioned(
+                    bottom: 4,
+                    child: Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: events.first.status.color,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+            // Leyenda de los puntos de estado
+            const Wrap(
+              spacing: 16,
+              runSpacing: 6,
+              alignment: WrapAlignment.center,
+              children: [
+                _LegendItem(status: DayStatus.complete),
+                _LegendItem(status: DayStatus.late),
+                _LegendItem(status: DayStatus.incomplete),
+              ],
+            ),
+          ],
         ),
       ),
+    );
+  }
+}
+
+class _MonthSummaryCard extends StatelessWidget {
+  final MonthSummary summary;
+
+  const _MonthSummaryCard({required this.summary});
+
+  @override
+  Widget build(BuildContext context) {
+    final monthName = toBeginningOfSentenceCase(
+      DateFormat('MMMM', 'es').format(summary.month),
+    );
+
+    return Material(
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: AppColors.borderLight),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Resumen de $monthName',
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 12),
+            IntrinsicHeight(
+              child: Row(
+                children: [
+                  _Stat(
+                    value: '${summary.daysAttended}',
+                    label: 'Días asistidos',
+                  ),
+                  const VerticalDivider(
+                    color: AppColors.borderLight,
+                    width: 24,
+                  ),
+                  _Stat(value: '${summary.lateDays}', label: 'Tardanzas'),
+                  const VerticalDivider(
+                    color: AppColors.borderLight,
+                    width: 24,
+                  ),
+                  _Stat(
+                    value: _formatHours(summary.worked),
+                    label: 'Horas trabajadas',
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+String _formatHours(Duration d) {
+  final h = d.inHours;
+  final m = d.inMinutes.remainder(60);
+  if (h == 0) return '$m min';
+  return m == 0 ? '$h h' : '$h h $m min';
+}
+
+class _Stat extends StatelessWidget {
+  final String value;
+  final String label;
+
+  const _Stat({required this.value, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 10,
-                  color: isDark ? AppColors.textMuted : AppColors.textSecondary,
-                  fontWeight: FontWeight.w600,
-                ),
-                maxLines: 1,
-              ),
-              Icon(icon, size: 14, color: color),
-            ],
-          ),
-          const SizedBox(height: 6),
           Text(
             value,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: color),
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
+              fontFeatures: [FontFeature.tabularFigures()],
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildRecordTimelineTile(AttendanceRecord record, bool isDark) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF131926) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isDark ? const Color(0x33FFFFFF) : AppColors.borderLight,
-        ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: record.type.color.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(record.type.icon, color: record.type.color, size: 22),
+class _LegendItem extends StatelessWidget {
+  final DayStatus status;
+
+  const _LegendItem({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: status.color,
+            shape: BoxShape.circle,
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      record.type.title,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: isDark ? Colors.white : AppColors.textPrimary,
-                      ),
-                    ),
-                    Text(
-                      DateFormatter.formatTime(record.timestamp),
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: isDark ? AppColors.accent : AppColors.primary,
-                      ),
-                    ),
-                  ],
+        ),
+        const SizedBox(width: 6),
+        Text(
+          status.label,
+          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+        ),
+      ],
+    );
+  }
+}
+
+/// Detalle del dia seleccionado como linea de tiempo de la jornada.
+class _DayDetail extends StatelessWidget {
+  final DateTime day;
+  final AttendanceDaySummary? summary;
+
+  const _DayDetail({required this.day, required this.summary});
+
+  static const _steps = [
+    AttendanceType.checkIn,
+    AttendanceType.lunchStart,
+    AttendanceType.lunchEnd,
+    AttendanceType.checkOut,
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final title = toBeginningOfSentenceCase(DateFormatter.formatFullDate(day));
+    final s = summary;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  '${record.branchName} • ${record.geozoneName ?? "Geozona"}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isDark ? AppColors.textMuted : AppColors.textSecondary,
-                  ),
-                ),
-                if (record.note != null && record.note!.isNotEmpty) ...[
-                  const SizedBox(height: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: isDark ? const Color(0x1FFFFFFF) : Colors.transparent,
-                      ),
-                    ),
-                    child: Row(
+              ),
+            ),
+            if (s != null) _StatusChip(status: s.status),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Material(
+          color: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: AppColors.borderLight),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+            child:
+                s == null
+                    ? const _EmptyDay()
+                    : Column(
                       children: [
-                        Icon(
-                          Icons.chat_bubble_outline_rounded,
-                          size: 12,
-                          color: isDark ? AppColors.textMuted : AppColors.textSecondary,
-                        ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            record.note!,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontStyle: FontStyle.italic,
-                              color: isDark ? Colors.white70 : AppColors.textPrimary,
-                            ),
+                        for (var i = 0; i < _steps.length; i++)
+                          _TimelineStep(
+                            type: _steps[i],
+                            record: s.recordOf(_steps[i]),
+                            isLast: i == _steps.length - 1,
                           ),
+                        const Divider(color: AppColors.borderLight, height: 20),
+                        Row(
+                          children: [
+                            const Text(
+                              'Horas trabajadas',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                            const Spacer(),
+                            Text(
+                              s.status == DayStatus.incomplete
+                                  ? '—'
+                                  : s.status == DayStatus.inProgress
+                                  ? '${_formatHours(s.worked)} (en curso)'
+                                  : _formatHours(s.worked),
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
+          ),
+        ),
+        // Justificar directamente desde un dia con problemas
+        if (s != null && s.needsJustification) ...[
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: OutlinedButton.icon(
+              onPressed: () {
+                HapticFeedbackService.shared.selectionClick();
+                NewJustificationSheet.show(context, initialDate: day);
+              },
+              icon: const Icon(Icons.edit_note_rounded),
+              label: const Text('Justificar este día'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.primary,
+                side: const BorderSide(color: AppColors.primary),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _StatusChip extends StatelessWidget {
+  final DayStatus status;
+
+  const _StatusChip({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: status.color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        status.label,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          color: status.color,
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyDay extends StatelessWidget {
+  const _EmptyDay();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 16),
+      child: Center(
+        child: Column(
+          children: [
+            Icon(
+              Icons.event_available_outlined,
+              size: 36,
+              color: AppColors.textMuted,
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Sin marcaciones este día',
+              style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TimelineStep extends StatelessWidget {
+  final AttendanceType type;
+  final AttendanceRecord? record;
+  final bool isLast;
+
+  const _TimelineStep({
+    required this.type,
+    required this.record,
+    required this.isLast,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = record;
+    final done = r != null;
+
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Punto y linea de la linea de tiempo
+          SizedBox(
+            width: 20,
+            child: Column(
+              children: [
+                const SizedBox(height: 4),
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: done ? AppColors.primary : Colors.white,
+                    border: Border.all(
+                      color: done ? AppColors.primary : AppColors.textMuted,
+                      width: 2,
+                    ),
                   ),
-                ],
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: record.isInsideGeozone
-                            ? AppColors.accent.withValues(alpha: 0.15)
-                            : (isDark ? const Color(0xFF3B2505) : const Color(0xFFFEF3C7)),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: record.isInsideGeozone
-                              ? AppColors.accent.withValues(alpha: 0.4)
-                              : Colors.amber.withValues(alpha: 0.5),
+                ),
+                if (!isLast)
+                  Expanded(
+                    child: Container(width: 2, color: AppColors.borderLight),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(bottom: isLast ? 0 : 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          type.shortName,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color:
+                                done
+                                    ? AppColors.textPrimary
+                                    : AppColors.textSecondary,
+                          ),
                         ),
                       ),
-                      child: Text(
-                        record.isInsideGeozone ? 'En geozona' : 'Fuera de rango',
+                      Text(
+                        done
+                            ? DateFormatter.formatTime(r.timestamp)
+                            : 'Sin marcar',
                         style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: record.isInsideGeozone
-                              ? AppColors.accent
-                              : (isDark ? Colors.amber.shade300 : const Color(0xFFB45309)),
+                          fontSize: 14,
+                          fontWeight: done ? FontWeight.w700 : FontWeight.w400,
+                          color:
+                              done
+                                  ? AppColors.textPrimary
+                                  : AppColors.textMuted,
+                          fontFeatures: const [FontFeature.tabularFigures()],
                         ),
+                      ),
+                    ],
+                  ),
+                  if (done) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      [
+                        r.geozoneName ?? r.branchName,
+                        if (!r.isInsideGeozone) 'Fuera de la geocerca',
+                      ].join(' · '),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color:
+                            r.isInsideGeozone
+                                ? AppColors.textSecondary
+                                : const Color(0xFFB45309),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    if (record.selfiePath != null)
-                      Row(
-                        children: [
-                          const Icon(Icons.face_retouching_natural_rounded, size: 13, color: AppColors.accent),
-                          const SizedBox(width: 3),
-                          Text(
-                            'Rostro verificado',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: isDark ? AppColors.textMuted : AppColors.textSecondary,
-                            ),
-                          ),
-                        ],
+                    if (r.note != null && r.note!.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        '“${r.note!}”',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
+                    ],
                   ],
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],

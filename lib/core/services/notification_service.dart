@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../../features/attendance_map/domain/shift_phase.dart';
+import '../contracts/i_storage_service.dart';
 import 'live_activity_service.dart';
 
 /// Servicio centralizado de notificaciones locales y seguimiento persistente de turno
@@ -12,23 +13,40 @@ class NotificationService {
   factory NotificationService() => _instance;
   NotificationService._internal();
 
-  final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _notifications =
+      FlutterLocalNotificationsPlugin();
   bool _isInitialized = false;
+  IStorageService? _storage;
+
+  /// Conecta el almacenamiento para respetar la preferencia del colaborador.
+  void attachStorage(IStorageService storage) => _storage = storage;
+
+  /// Preferencia "Turno en vivo" (Dynamic Island / notificacion persistente).
+  bool get isLiveTrackingEnabled => _storage?.isNotificationsEnabled() ?? true;
+
+  Future<void> setLiveTrackingEnabled(bool enabled) async {
+    await _storage?.setNotificationsEnabled(enabled);
+    if (!enabled) await cancelShiftNotification();
+  }
 
   static const int shiftNotificationId = 1001;
   static const String shiftChannelId = 'asisgo_shift_tracker';
-  static const String shiftChannelName = 'Seguimiento de Turno en Vivo (Live Activity)';
+  static const String shiftChannelName =
+      'Seguimiento de Turno en Vivo (Live Activity)';
   static const String shiftChannelDesc =
       'Notificación persistente con cronómetro en tiempo real, geocerca y refrigerio';
 
-  static const MethodChannel _androidLiveChannel =
-      MethodChannel('com.asisgo.app/android_live_notification');
+  static const MethodChannel _androidLiveChannel = MethodChannel(
+    'com.asisgo.app/android_live_notification',
+  );
 
   /// Inicializa los canales y configuraciones de notificaciones para Android e iOS
   Future<void> initialize() async {
     if (_isInitialized) return;
 
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
     const darwinSettings = DarwinInitializationSettings(
       requestAlertPermission: false,
       requestBadgePermission: false,
@@ -45,8 +63,11 @@ class NotificationService {
       await _notifications.initialize(initSettings);
 
       // Crear canal de notificación específico para Android con soporte de cronómetro y prioridad fija
-      final androidImplementation = _notifications
-          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+      final androidImplementation =
+          _notifications
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >();
       if (androidImplementation != null) {
         const channel = AndroidNotificationChannel(
           shiftChannelId,
@@ -62,9 +83,13 @@ class NotificationService {
 
       await LiveActivityService().initialize();
       _isInitialized = true;
-      debugPrint('[NotificationService] Notificaciones locales y Live Activities inicializadas.');
+      debugPrint(
+        '[NotificationService] Notificaciones locales y Live Activities inicializadas.',
+      );
     } catch (e) {
-      debugPrint('[NotificationService] Error al inicializar notificaciones: $e');
+      debugPrint(
+        '[NotificationService] Error al inicializar notificaciones: $e',
+      );
     }
   }
 
@@ -74,15 +99,15 @@ class NotificationService {
     try {
       if (defaultTargetPlatform == TargetPlatform.iOS) {
         return await _notifications
-            .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
-            ?.requestPermissions(
-              alert: true,
-              badge: true,
-              sound: true,
-            );
+            .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin
+            >()
+            ?.requestPermissions(alert: true, badge: true, sound: true);
       } else if (defaultTargetPlatform == TargetPlatform.android) {
         return await _notifications
-            .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >()
             ?.requestNotificationsPermission();
       }
     } catch (e) {
@@ -102,25 +127,37 @@ class NotificationService {
   }) async {
     if (!_isInitialized) return;
 
-    // Si la jornada no ha iniciado o ya concluyó, se remueve la notificación persistente
-    if (phase == ShiftPhase.notStarted || phase == ShiftPhase.completed) {
+    // Si la jornada no ha iniciado, ya concluyó o el colaborador desactivó el
+    // seguimiento en vivo, se remueve la notificación persistente
+    if (phase == ShiftPhase.notStarted ||
+        phase == ShiftPhase.completed ||
+        !isLiveTrackingEnabled) {
       await cancelShiftNotification();
       return;
     }
 
     final bool isLunch = phase == ShiftPhase.onLunch;
     final DateTime? activeTimerBase = isLunch ? lunchStartTime : shiftStartTime;
-    final int chronometerEpoch = (activeTimerBase ?? DateTime.now()).millisecondsSinceEpoch;
+    final int chronometerEpoch =
+        (activeTimerBase ?? DateTime.now()).millisecondsSinceEpoch;
 
     // Colores y badges temáticos dinámicos (sincronizados con la Dynamic Island de iOS)
-    final Color themeColor = isLunch ? const Color(0xFFF59E0B) : const Color(0xFF10B981);
-    final String subText = isLunch
-        ? 'EN REFRIGERIO • PAUSA'
-        : (phase == ShiftPhase.resumed ? 'TURNO REANUDADO' : 'EN TURNO ACTIVO');
+    final Color themeColor =
+        isLunch ? const Color(0xFFF59E0B) : const Color(0xFF10B981);
+    final String subText =
+        isLunch
+            ? 'EN REFRIGERIO • PAUSA'
+            : (phase == ShiftPhase.resumed
+                ? 'TURNO REANUDADO'
+                : 'EN TURNO ACTIVO');
     final String iconName = isLunch ? 'ic_stat_refrigerio' : 'ic_stat_shift';
-    final String geozoneIndicator = isInsideGeozone ? '🟢 Dentro de geozona' : '🔴 Fuera de geozona';
-    final int completedPunches = punchesCount ??
-        (phase == ShiftPhase.working ? 1 : (phase == ShiftPhase.onLunch ? 2 : 3));
+    final String geozoneIndicator =
+        isInsideGeozone ? '🟢 Dentro de geozona' : '🔴 Fuera de geozona';
+    final int completedPunches =
+        punchesCount ??
+        (phase == ShiftPhase.working
+            ? 1
+            : (phase == ShiftPhase.onLunch ? 2 : 3));
 
     String title;
     String body;
@@ -129,16 +166,20 @@ class NotificationService {
     switch (phase) {
       case ShiftPhase.working:
         title = 'AsisGo • Turno en $branchName';
-        body = '$geozoneIndicator • Entrada: ${_formatTime(shiftStartTime ?? DateTime.now())} • Próx: Refrigerio';
-        bigText = '$geozoneIndicator autorizada ($branchName)\n'
+        body =
+            '$geozoneIndicator • Entrada: ${_formatTime(shiftStartTime ?? DateTime.now())} • Próx: Refrigerio';
+        bigText =
+            '$geozoneIndicator autorizada ($branchName)\n'
             '⏱️ Marcación de Entrada: ${_formatTime(shiftStartTime ?? DateTime.now())}\n'
             '📊 Progreso: $completedPunches de 4 marcaciones del día\n'
             '👉 Próxima marcación esperada: Iniciar Refrigerio';
         break;
       case ShiftPhase.onLunch:
         title = 'AsisGo • Refrigerio en Curso';
-        body = '☕ Pausa iniciada: ${_formatTime(lunchStartTime ?? DateTime.now())} (60 min) • $branchName';
-        bigText = '☕ Pausa de refrigerio en curso (Estándar: 60 min)\n'
+        body =
+            '☕ Pausa iniciada: ${_formatTime(lunchStartTime ?? DateTime.now())} (60 min) • $branchName';
+        bigText =
+            '☕ Pausa de refrigerio en curso (Estándar: 60 min)\n'
             '🏢 Sede de asignación: $branchName\n'
             '⏱️ Inicio de refrigerio: ${_formatTime(lunchStartTime ?? DateTime.now())}\n'
             '📊 Progreso: $completedPunches de 4 marcaciones del día\n'
@@ -147,7 +188,8 @@ class NotificationService {
       case ShiftPhase.resumed:
         title = 'AsisGo • Jornada Reanudada en $branchName';
         body = '$geozoneIndicator • Segundo bloque activo • Próx: Salida';
-        bigText = '$geozoneIndicator autorizada ($branchName)\n'
+        bigText =
+            '$geozoneIndicator autorizada ($branchName)\n'
             '💼 Segundo bloque de jornada en desarrollo\n'
             '⏱️ Ingreso inicial: ${_formatTime(shiftStartTime ?? DateTime.now())}\n'
             '📊 Progreso: $completedPunches de 4 marcaciones del día\n'
@@ -216,7 +258,9 @@ class NotificationService {
           'isInsideGeozone': isInsideGeozone,
           'punchesCount': completedPunches,
         });
-        debugPrint('[NotificationService] Android Dynamic Island RemoteViews sincronizada.');
+        debugPrint(
+          '[NotificationService] Android Dynamic Island RemoteViews sincronizada.',
+        );
       } catch (e) {
         debugPrint('[NotificationService] Android Dynamic Island error: $e');
       }
@@ -234,9 +278,13 @@ class NotificationService {
           body,
           notificationDetails,
         );
-        debugPrint('[NotificationService] Notificación persistente iOS de turno actualizada: $title');
+        debugPrint(
+          '[NotificationService] Notificación persistente iOS de turno actualizada: $title',
+        );
       } catch (e) {
-        debugPrint('[NotificationService] No se pudo mostrar la notificación de turno: $e');
+        debugPrint(
+          '[NotificationService] No se pudo mostrar la notificación de turno: $e',
+        );
       }
 
       await LiveActivityService().syncShift(
@@ -262,9 +310,13 @@ class NotificationService {
         } catch (_) {}
       }
 
-      debugPrint('[NotificationService] Notificación persistente y Live Activity canceladas.');
+      debugPrint(
+        '[NotificationService] Notificación persistente y Live Activity canceladas.',
+      );
     } catch (e) {
-      debugPrint('[NotificationService] Error al cancelar notificación de turno: $e');
+      debugPrint(
+        '[NotificationService] Error al cancelar notificación de turno: $e',
+      );
     }
   }
 
@@ -273,7 +325,9 @@ class NotificationService {
   }
 
   Future<void> scheduleLunchReminder({required int durationMinutes}) async {
-    debugPrint('Recordatorio programado para fin de refrigerio en $durationMinutes minutos');
+    debugPrint(
+      'Recordatorio programado para fin de refrigerio en $durationMinutes minutos',
+    );
   }
 
   Future<void> cancelAll() async {

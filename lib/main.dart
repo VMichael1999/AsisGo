@@ -36,7 +36,8 @@ void main() async {
   final securityService = SecurityService(storageService);
   await securityService.init();
 
-  final notificationService = NotificationService();
+  final notificationService =
+      NotificationService()..attachStorage(storageService);
   await notificationService.initialize();
 
   final connectivityService = ConnectivityService();
@@ -123,30 +124,33 @@ class AsisGoApp extends StatelessWidget {
             create: (ctx) => AuthCubit(authRepository)..checkAuthStatus(),
           ),
           BlocProvider<LocationCubit>(
-            create: (ctx) => LocationCubit(
-              locationService: locationService,
-              branchRepository: branchRepository,
-              securityService: securityService,
-            ),
+            create:
+                (ctx) => LocationCubit(
+                  locationService: locationService,
+                  branchRepository: branchRepository,
+                  securityService: securityService,
+                ),
           ),
           BlocProvider<AttendanceCubit>(
-            create: (ctx) => AttendanceCubit(
-              attendanceRepository: attendanceRepository,
-              connectivityService: connectivityService,
-              offlineSyncService: offlineSyncService,
-              hapticFeedbackService: hapticFeedbackService,
-            ),
+            create:
+                (ctx) => AttendanceCubit(
+                  attendanceRepository: attendanceRepository,
+                  connectivityService: connectivityService,
+                  offlineSyncService: offlineSyncService,
+                  hapticFeedbackService: hapticFeedbackService,
+                ),
           ),
           BlocProvider<CalendarCubit>(
-            create: (ctx) => CalendarCubit(
-              attendanceRepository: attendanceRepository,
-            ),
+            create:
+                (ctx) =>
+                    CalendarCubit(attendanceRepository: attendanceRepository),
           ),
           BlocProvider<JustificationCubit>(
-            create: (ctx) => JustificationCubit(
-              repository: justificationRepository,
-              hapticService: hapticFeedbackService,
-            ),
+            create:
+                (ctx) => JustificationCubit(
+                  repository: justificationRepository,
+                  hapticService: hapticFeedbackService,
+                ),
           ),
         ],
         child: MaterialApp(
