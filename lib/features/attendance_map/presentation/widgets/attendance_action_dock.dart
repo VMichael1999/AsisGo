@@ -1,3 +1,4 @@
+import '../../../../core/theme/asis_palette.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/haptic_feedback_service.dart';
@@ -37,7 +38,7 @@ class AttendanceActionDock extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Material(
-              color: Colors.white,
+              color: context.palette.surface,
               elevation: 2,
               borderRadius: BorderRadius.circular(20),
               child: InkWell(
@@ -46,12 +47,12 @@ class AttendanceActionDock extends StatelessWidget {
                   HapticFeedbackService.shared.selectionClick();
                   onSecondaryActionPressed!();
                 },
-                child: const Padding(
+                child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   child: Text(
                     '¿Deseas marcar salida anticipada?',
                     style: TextStyle(
-                      color: AppColors.primary,
+                      color: context.palette.primary,
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                     ),
@@ -71,7 +72,7 @@ class AttendanceActionDock extends StatelessWidget {
                     onPrimaryActionPressed();
                   },
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
+            backgroundColor: context.palette.primary,
             foregroundColor: Colors.white,
             disabledBackgroundColor: AppColors.completedColor,
             disabledForegroundColor: Colors.white,

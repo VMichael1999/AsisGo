@@ -1,14 +1,14 @@
+import '../../core/theme/asis_palette.dart';
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart';
 
 class AsisRadarIndicator extends StatefulWidget {
-  final Color color;
+  final Color? color;
   final double size;
   final bool isPulsing;
 
   const AsisRadarIndicator({
     super.key,
-    this.color = AppColors.accent,
+    this.color,
     this.size = 12,
     this.isPulsing = true,
   });
@@ -19,6 +19,8 @@ class AsisRadarIndicator extends StatefulWidget {
 
 class _AsisRadarIndicatorState extends State<AsisRadarIndicator>
     with SingleTickerProviderStateMixin {
+  Color _color(BuildContext context) => widget.color ?? context.palette.primary;
+
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   late Animation<double> _opacityAnimation;
@@ -31,13 +33,15 @@ class _AsisRadarIndicatorState extends State<AsisRadarIndicator>
       duration: const Duration(milliseconds: 1800),
     );
 
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 2.4).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 2.4,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
 
-    _opacityAnimation = Tween<double>(begin: 0.6, end: 0.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
+    _opacityAnimation = Tween<double>(
+      begin: 0.6,
+      end: 0.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
 
     if (widget.isPulsing) {
       _controller.repeat();
@@ -82,7 +86,9 @@ class _AsisRadarIndicatorState extends State<AsisRadarIndicator>
                       height: widget.size,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: widget.color.withValues(alpha: _opacityAnimation.value),
+                        color: _color(
+                          context,
+                        ).withValues(alpha: _opacityAnimation.value),
                       ),
                     ),
                   );
@@ -93,10 +99,10 @@ class _AsisRadarIndicatorState extends State<AsisRadarIndicator>
               height: widget.size,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: widget.color,
+                color: _color(context),
                 boxShadow: [
                   BoxShadow(
-                    color: widget.color.withValues(alpha: 0.5),
+                    color: _color(context).withValues(alpha: 0.5),
                     blurRadius: 6,
                     spreadRadius: 1,
                   ),

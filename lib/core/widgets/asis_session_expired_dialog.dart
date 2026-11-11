@@ -1,3 +1,4 @@
+import '../../core/theme/asis_palette.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
@@ -22,16 +23,17 @@ class AsisSessionExpiredDialog extends StatelessWidget {
       context: context,
       barrierDismissible: false,
       barrierColor: Colors.black.withValues(alpha: 0.52),
-      builder: (dialogContext) => PopScope(
-        canPop: false,
-        child: AsisSessionExpiredDialog(
-          message: message,
-          onDismissAndLogin: () {
-            Navigator.of(dialogContext, rootNavigator: true).pop();
-            onDismissAndLogin();
-          },
-        ),
-      ),
+      builder:
+          (dialogContext) => PopScope(
+            canPop: false,
+            child: AsisSessionExpiredDialog(
+              message: message,
+              onDismissAndLogin: () {
+                Navigator.of(dialogContext, rootNavigator: true).pop();
+                onDismissAndLogin();
+              },
+            ),
+          ),
     );
   }
 
@@ -43,7 +45,7 @@ class AsisSessionExpiredDialog extends StatelessWidget {
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 24),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.98),
+            color: context.palette.surface.withValues(alpha: 0.98),
             borderRadius: BorderRadius.circular(28),
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.6),
@@ -70,9 +72,14 @@ class AsisSessionExpiredDialog extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
                         decoration: BoxDecoration(
-                          color: AppColors.checkOutColor.withValues(alpha: 0.12),
+                          color: AppColors.checkOutColor.withValues(
+                            alpha: 0.12,
+                          ),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
@@ -105,7 +112,10 @@ class AsisSessionExpiredDialog extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: Colors.grey.shade100,
                             shape: BoxShape.circle,
-                            border: Border.all(color: Colors.grey.shade300, width: 0.8),
+                            border: Border.all(
+                              color: Colors.grey.shade300,
+                              width: 0.8,
+                            ),
                           ),
                           child: Icon(
                             Icons.close_rounded,
@@ -123,17 +133,17 @@ class AsisSessionExpiredDialog extends StatelessWidget {
                     width: 72,
                     height: 72,
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.08),
+                      color: context.palette.primary.withValues(alpha: 0.08),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.18),
+                        color: context.palette.primary.withValues(alpha: 0.18),
                         width: 2,
                       ),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Icon(
                         Icons.lock_clock_rounded,
-                        color: AppColors.primary,
+                        color: context.palette.primary,
                         size: 38,
                       ),
                     ),
@@ -141,13 +151,13 @@ class AsisSessionExpiredDialog extends StatelessWidget {
                   const SizedBox(height: 18),
 
                   // Titulo informativo
-                  const Text(
+                  Text(
                     'Inicio de Sesión Expirado',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary,
+                      color: context.palette.textPrimary,
                       letterSpacing: -0.4,
                     ),
                   ),
@@ -158,9 +168,9 @@ class AsisSessionExpiredDialog extends StatelessWidget {
                     message ??
                         'El inicio de sesión ha expirado, vuelve a iniciar sesión nuevamente.',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13.5,
-                      color: AppColors.textSecondary,
+                      color: context.palette.textSecondary,
                       height: 1.45,
                     ),
                   ),
@@ -168,11 +178,14 @@ class AsisSessionExpiredDialog extends StatelessWidget {
 
                   // Tarjeta informativa de auditoria y resguardo de datos
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
                     decoration: BoxDecoration(
-                      color: AppColors.backgroundLight,
+                      color: context.palette.background,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppColors.borderLight),
+                      border: Border.all(color: context.palette.border),
                     ),
                     child: Row(
                       children: [
@@ -203,7 +216,11 @@ class AsisSessionExpiredDialog extends StatelessWidget {
                     height: 50,
                     child: ElevatedButton.icon(
                       onPressed: onDismissAndLogin,
-                      icon: const Icon(Icons.login_rounded, size: 20, color: Colors.white),
+                      icon: const Icon(
+                        Icons.login_rounded,
+                        size: 20,
+                        color: Colors.white,
+                      ),
                       label: const Text(
                         'Volver a Iniciar Sesión',
                         style: TextStyle(
@@ -213,7 +230,7 @@ class AsisSessionExpiredDialog extends StatelessWidget {
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: context.palette.primary,
                         foregroundColor: Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(

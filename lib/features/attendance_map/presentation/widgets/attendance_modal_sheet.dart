@@ -1,3 +1,4 @@
+import '../../../../core/theme/asis_palette.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/haptic_feedback_service.dart';
@@ -75,7 +76,7 @@ class _AttendanceModalSheetState extends State<AttendanceModalSheet> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: Colors.white,
+      backgroundColor: context.palette.surface,
       surfaceTintColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -88,11 +89,11 @@ class _AttendanceModalSheetState extends State<AttendanceModalSheet> {
             // Encabezado: titulo y boton de cierre
             Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Asistencia',
                     style: TextStyle(
-                      color: AppColors.primary,
+                      color: context.palette.primary,
                       fontSize: 24,
                       fontWeight: FontWeight.w800,
                     ),
@@ -116,7 +117,7 @@ class _AttendanceModalSheetState extends State<AttendanceModalSheet> {
                 ),
               ],
             ),
-            const Divider(color: AppColors.primary, thickness: 1.2, height: 22),
+            Divider(color: context.palette.primary, thickness: 1.2, height: 22),
 
             // Tipo de marcacion
             DropdownButtonFormField<AttendanceType>(
@@ -125,18 +126,18 @@ class _AttendanceModalSheetState extends State<AttendanceModalSheet> {
               icon: const Icon(Icons.keyboard_arrow_down_rounded),
               decoration: InputDecoration(
                 filled: true,
-                fillColor: Colors.white,
-                prefixIcon: const Icon(
+                fillColor: context.palette.surface,
+                prefixIcon: Icon(
                   Icons.location_on_outlined,
-                  color: AppColors.textSecondary,
+                  color: context.palette.textSecondary,
                 ),
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 12,
                   vertical: 14,
                 ),
-                border: _border(AppColors.textMuted),
-                enabledBorder: _border(AppColors.textMuted),
-                focusedBorder: _border(AppColors.primary),
+                border: _border(context.palette.textMuted),
+                enabledBorder: _border(context.palette.textMuted),
+                focusedBorder: _border(context.palette.primary),
               ),
               items: [
                 for (final type in widget.options)
@@ -144,9 +145,9 @@ class _AttendanceModalSheetState extends State<AttendanceModalSheet> {
                     value: type,
                     child: Text(
                       type.title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
-                        color: AppColors.textPrimary,
+                        color: context.palette.textPrimary,
                       ),
                     ),
                   ),
@@ -165,15 +166,15 @@ class _AttendanceModalSheetState extends State<AttendanceModalSheet> {
               textCapitalization: TextCapitalization.sentences,
               decoration: InputDecoration(
                 hintText: 'Comentario (opcional)',
-                hintStyle: const TextStyle(
+                hintStyle: TextStyle(
                   fontSize: 16,
-                  color: AppColors.textSecondary,
+                  color: context.palette.textSecondary,
                 ),
                 filled: true,
-                fillColor: const Color(0xFFF1F5F9),
-                border: _border(AppColors.borderLight),
-                enabledBorder: _border(AppColors.borderLight),
-                focusedBorder: _border(AppColors.primary),
+                fillColor: context.palette.surfaceAlt,
+                border: _border(context.palette.border),
+                enabledBorder: _border(context.palette.border),
+                focusedBorder: _border(context.palette.primary),
               ),
             ),
             const SizedBox(height: 12),
@@ -193,12 +194,12 @@ class _AttendanceModalSheetState extends State<AttendanceModalSheet> {
               '${widget.branch.name} • ${widget.geozone.name}'
               '${widget.isOffline ? '\nSin conexión: se sincronizará al recuperar señal.' : ''}',
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
-                color: AppColors.textSecondary,
+                color: context.palette.textSecondary,
               ),
             ),
-            const Divider(color: AppColors.borderLight, height: 24),
+            Divider(color: context.palette.border, height: 24),
 
             Center(
               child: ElevatedButton(
@@ -213,7 +214,7 @@ class _AttendanceModalSheetState extends State<AttendanceModalSheet> {
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: context.palette.primary,
                   foregroundColor: Colors.white,
                   minimumSize: const Size(150, 50),
                   shape: RoundedRectangleBorder(

@@ -1,6 +1,6 @@
+import '../../../core/theme/asis_palette.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/services/haptic_feedback_service.dart';
 import '../../../../core/services/notification_service.dart';
@@ -24,12 +24,8 @@ class _ProfileViewState extends State<ProfileView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
-      appBar: AppBar(
-        title: const Text('Mi perfil'),
-        backgroundColor: AppColors.primary,
-        elevation: 0,
-      ),
+      backgroundColor: context.palette.background,
+      appBar: AppBar(title: const Text('Mi perfil'), elevation: 0),
       body: BlocBuilder<AuthCubit, AuthState>(
         builder: (context, state) {
           final user = state.currentUser;
@@ -66,7 +62,7 @@ class _ProfileViewState extends State<ProfileView> {
                   icon: const Icon(Icons.logout_rounded),
                   label: const Text('Cerrar sesión'),
                   style: TextButton.styleFrom(
-                    foregroundColor: AppColors.checkOutColor,
+                    foregroundColor: context.palette.danger,
                     minimumSize: const Size(0, 48),
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     textStyle: const TextStyle(
@@ -77,10 +73,13 @@ class _ProfileViewState extends State<ProfileView> {
                 ),
               ),
               const SizedBox(height: 4),
-              const Center(
+              Center(
                 child: Text(
                   '${AppConstants.appName} ${AppConstants.appVersion}',
-                  style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: context.palette.textMuted,
+                  ),
                 ),
               ),
             ],
@@ -108,7 +107,7 @@ class _ProfileViewState extends State<ProfileView> {
               TextButton(
                 onPressed: () => Navigator.pop(ctx, true),
                 style: TextButton.styleFrom(
-                  foregroundColor: AppColors.checkOutColor,
+                  foregroundColor: context.palette.danger,
                 ),
                 child: const Text('Cerrar sesión'),
               ),
@@ -132,10 +131,10 @@ class _SectionLabel extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(4, 24, 4, 8),
       child: Text(
         text,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w700,
-          color: AppColors.textSecondary,
+          color: context.palette.textSecondary,
         ),
       ),
     );
@@ -154,10 +153,10 @@ class _CardShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
+      color: context.palette.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.borderLight),
+        side: BorderSide(color: context.palette.border),
       ),
       clipBehavior: Clip.antiAlias,
       child: Padding(padding: padding, child: child),
@@ -185,13 +184,13 @@ class _ProfileHeader extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 30,
-            backgroundColor: AppColors.accentLight,
+            backgroundColor: context.palette.primarySoft,
             child: Text(
               user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : '?',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
-                color: AppColors.primary,
+                color: context.palette.primary,
               ),
             ),
           ),
@@ -202,36 +201,36 @@ class _ProfileHeader extends StatelessWidget {
               children: [
                 Text(
                   user.fullName,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: context.palette.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   user.role,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
-                    color: AppColors.textSecondary,
+                    color: context.palette.textSecondary,
                   ),
                 ),
                 if (workplace.isNotEmpty) ...[
                   const SizedBox(height: 2),
                   Text(
                     workplace,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
-                      color: AppColors.textSecondary,
+                      color: context.palette.textSecondary,
                     ),
                   ),
                 ],
                 const SizedBox(height: 4),
                 Text(
                   'DNI ${user.documentNumber}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
-                    color: AppColors.textMuted,
+                    color: context.palette.textMuted,
                   ),
                 ),
               ],
@@ -255,12 +254,12 @@ class _ScheduleCard extends StatelessWidget {
         child: Row(
           children: [
             _ScheduleItem(label: 'Entrada', value: user.shiftStartTime),
-            const VerticalDivider(color: AppColors.borderLight, width: 24),
+            VerticalDivider(color: context.palette.border, width: 24),
             const _ScheduleItem(
               label: 'Refrigerio',
               value: '${AppConstants.lunchDurationMinutes} min',
             ),
-            const VerticalDivider(color: AppColors.borderLight, width: 24),
+            VerticalDivider(color: context.palette.border, width: 24),
             _ScheduleItem(label: 'Salida', value: user.shiftEndTime),
           ],
         ),
@@ -282,19 +281,19 @@ class _ScheduleItem extends StatelessWidget {
         children: [
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: context.palette.textPrimary,
               fontFeatures: [FontFeature.tabularFigures()],
             ),
           ),
           const SizedBox(height: 2),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
-              color: AppColors.textSecondary,
+              color: context.palette.textSecondary,
             ),
           ),
         ],
@@ -320,14 +319,14 @@ class _SyncCard extends StatelessWidget {
             syncing
                 ? (
                   Icons.sync_rounded,
-                  AppColors.primary,
+                  context.palette.primary,
                   'Sincronizando...',
                   'Enviando tus marcaciones al servidor',
                 )
                 : pending > 0
                 ? (
                   Icons.cloud_upload_outlined,
-                  const Color(0xFFB45309),
+                  context.palette.warning,
                   pending == 1
                       ? '1 marcación pendiente'
                       : '$pending marcaciones pendientes',
@@ -337,7 +336,7 @@ class _SyncCard extends StatelessWidget {
                 )
                 : (
                   Icons.cloud_done_outlined,
-                  const Color(0xFF047857),
+                  context.palette.success,
                   'Marcaciones al día',
                   offline
                       ? 'Sin conexión. Las nuevas marcas se guardarán en el teléfono'
@@ -356,18 +355,18 @@ class _SyncCard extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: context.palette.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
-                        color: AppColors.textSecondary,
+                        color: context.palette.textSecondary,
                       ),
                     ),
                   ],
@@ -381,7 +380,7 @@ class _SyncCard extends StatelessWidget {
                     context.read<AttendanceCubit>().syncPendingNow();
                   },
                   style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: context.palette.primary,
                     minimumSize: const Size(0, 44),
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                   ),
@@ -389,14 +388,14 @@ class _SyncCard extends StatelessWidget {
                 ),
               ],
               if (syncing)
-                const Padding(
+                Padding(
                   padding: EdgeInsets.all(10),
                   child: SizedBox(
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2.2,
-                      color: AppColors.primary,
+                      color: context.palette.primary,
                     ),
                   ),
                 ),
@@ -440,7 +439,7 @@ class _PreferencesCardState extends State<_PreferencesCard> {
               setState(() {});
             },
           ),
-          const Divider(height: 1, indent: 16, color: AppColors.borderLight),
+          Divider(height: 1, indent: 16, color: context.palette.border),
           _PreferenceTile(
             title: 'Vibración al marcar',
             subtitle: 'Confirma cada marcación con una vibración',
@@ -450,7 +449,7 @@ class _PreferencesCardState extends State<_PreferencesCard> {
               setState(() {});
             },
           ),
-          const Divider(height: 1, indent: 16, color: AppColors.borderLight),
+          Divider(height: 1, indent: 16, color: context.palette.border),
           _PreferenceTile(
             title: 'Sonido al marcar',
             subtitle: 'Reproduce un sonido de confirmación',
@@ -484,19 +483,19 @@ class _PreferenceTile extends StatelessWidget {
     return SwitchListTile.adaptive(
       value: value,
       onChanged: onChanged,
-      activeTrackColor: AppColors.primary,
+      activeTrackColor: context.palette.primary,
       contentPadding: const EdgeInsets.fromLTRB(16, 4, 12, 4),
       title: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
+          color: context.palette.textPrimary,
         ),
       ),
       subtitle: Text(
         subtitle,
-        style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+        style: TextStyle(fontSize: 13, color: context.palette.textSecondary),
       ),
     );
   }

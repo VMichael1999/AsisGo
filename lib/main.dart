@@ -1,3 +1,4 @@
+import 'core/theme/asis_palette.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -10,7 +11,6 @@ import 'core/services/location_service.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/offline_sync_service.dart';
 import 'core/services/storage_service.dart';
-import 'core/constants/app_colors.dart';
 import 'core/theme/app_theme.dart';
 import 'features/attendance_map/data/attendance_repository.dart';
 import 'features/attendance_map/data/branch_repository.dart';
@@ -157,15 +157,17 @@ class AsisGoApp extends StatelessWidget {
           title: 'AsisGo',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
-          themeMode: ThemeMode.light,
+          darkTheme: AppTheme.darkTheme,
+          // Sigue el modo claro/oscuro del sistema
+          themeMode: ThemeMode.system,
           home: BlocBuilder<AuthCubit, AuthState>(
             builder: (context, state) {
               if (state is Authenticated || state is AuthSessionExpired) {
                 return const MainNavigationShell();
               }
               if (state is AuthLoading) {
-                return const Scaffold(
-                  backgroundColor: AppColors.backgroundLight,
+                return Scaffold(
+                  backgroundColor: context.palette.background,
                   body: AsisLoadingOverlay(
                     skeleton: AsisLoginSkeleton(),
                     message: 'Iniciando sesión en AsisGo...',

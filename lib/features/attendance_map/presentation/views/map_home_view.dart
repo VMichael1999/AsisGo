@@ -1,3 +1,4 @@
+import '../../../../core/theme/asis_palette.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -272,9 +273,9 @@ class _MapHomeViewState extends State<MapHomeView> {
                         Text(
                           locationState.message,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 14,
-                            color: AppColors.textPrimary,
+                            color: context.palette.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -313,8 +314,10 @@ class _MapHomeViewState extends State<MapHomeView> {
                     circleId: gm.CircleId(gz.id),
                     center: gz.coordinates.toGoogle,
                     radius: gz.radiusMeters,
-                    fillColor: AppColors.textSecondary.withValues(alpha: 0.16),
-                    strokeColor: AppColors.textSecondary.withValues(
+                    fillColor: context.palette.textSecondary.withValues(
+                      alpha: 0.16,
+                    ),
+                    strokeColor: context.palette.textSecondary.withValues(
                       alpha: isCurrentGz ? 0.9 : 0.5,
                     ),
                     strokeWidth: isCurrentGz ? 3 : 1,
@@ -363,7 +366,7 @@ class _MapHomeViewState extends State<MapHomeView> {
                       children: [
                         // Capa base de mapa de alto rendimiento en modo oscuro
                         Container(
-                          color: AppColors.backgroundLight,
+                          color: context.palette.background,
                           child: gm.GoogleMap(
                             onMapCreated:
                                 (controller) => _mapController = controller,
@@ -419,23 +422,22 @@ class _MapHomeViewState extends State<MapHomeView> {
                                           vertical: 10,
                                         ),
                                         isDark: false,
-                                        customBackground: const Color(
-                                          0xF7FFFFFF,
-                                        ),
+                                        customBackground:
+                                            context.palette.surface,
                                         customBorderColor:
-                                            AppColors.borderLight,
+                                            context.palette.border,
                                         child: Row(
                                           children: [
                                             Container(
                                               padding: const EdgeInsets.all(8),
                                               decoration: BoxDecoration(
-                                                color: AppColors.accent
+                                                color: context.palette.primary
                                                     .withValues(alpha: 0.15),
                                                 shape: BoxShape.circle,
                                               ),
-                                              child: const Icon(
+                                              child: Icon(
                                                 Icons.business_rounded,
-                                                color: AppColors.accent,
+                                                color: context.palette.primary,
                                                 size: 20,
                                               ),
                                             ),
@@ -453,9 +455,10 @@ class _MapHomeViewState extends State<MapHomeView> {
                                                           loc
                                                               .activeMapBranch
                                                               .name,
-                                                          style: const TextStyle(
+                                                          style: TextStyle(
                                                             color:
-                                                                AppColors
+                                                                context
+                                                                    .palette
                                                                     .textPrimary,
                                                             fontSize: 13,
                                                             fontWeight:
@@ -467,12 +470,13 @@ class _MapHomeViewState extends State<MapHomeView> {
                                                                   .ellipsis,
                                                         ),
                                                       ),
-                                                      const Icon(
+                                                      Icon(
                                                         Icons
                                                             .expand_more_rounded,
                                                         size: 18,
                                                         color:
-                                                            AppColors
+                                                            context
+                                                                .palette
                                                                 .textSecondary,
                                                       ),
                                                       const SizedBox(width: 6),
@@ -484,8 +488,9 @@ class _MapHomeViewState extends State<MapHomeView> {
                                                             ),
                                                         decoration: BoxDecoration(
                                                           color:
-                                                              AppColors
-                                                                  .accentLight,
+                                                              context
+                                                                  .palette
+                                                                  .primarySoft,
                                                           borderRadius:
                                                               BorderRadius.circular(
                                                                 10,
@@ -493,16 +498,15 @@ class _MapHomeViewState extends State<MapHomeView> {
                                                         ),
                                                         child: Text(
                                                           'Sede ${loc.currentBranchIndex + 1} de ${loc.companyBranches.length}',
-                                                          style:
-                                                              const TextStyle(
-                                                                color:
-                                                                    AppColors
-                                                                        .accent,
-                                                                fontSize: 10,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w700,
-                                                              ),
+                                                          style: TextStyle(
+                                                            color:
+                                                                context
+                                                                    .palette
+                                                                    .primary,
+                                                            fontSize: 10,
+                                                            fontWeight:
+                                                                FontWeight.w700,
+                                                          ),
                                                         ),
                                                       ),
                                                     ],
@@ -510,9 +514,10 @@ class _MapHomeViewState extends State<MapHomeView> {
                                                   const SizedBox(height: 2),
                                                   Text(
                                                     '${loc.activeMapBranch.address} • ${loc.selectedCompany.shortName}',
-                                                    style: const TextStyle(
+                                                    style: TextStyle(
                                                       color:
-                                                          AppColors
+                                                          context
+                                                              .palette
                                                               .textSecondary,
                                                       fontSize: 11,
                                                     ),
@@ -536,16 +541,19 @@ class _MapHomeViewState extends State<MapHomeView> {
                                                   6,
                                                 ),
                                                 decoration: BoxDecoration(
-                                                  color: const Color(
-                                                    0xFFF1F5F9,
-                                                  ),
+                                                  color:
+                                                      context
+                                                          .palette
+                                                          .surfaceAlt,
                                                   shape: BoxShape.circle,
                                                 ),
-                                                child: const Icon(
+                                                child: Icon(
                                                   Icons.close_rounded,
                                                   size: 16,
                                                   color:
-                                                      AppColors.textSecondary,
+                                                      context
+                                                          .palette
+                                                          .textSecondary,
                                                 ),
                                               ),
                                             ),
@@ -583,8 +591,8 @@ class _MapHomeViewState extends State<MapHomeView> {
                               padding: EdgeInsets.zero,
                               blurAmount: 0,
                               isDark: false,
-                              customBackground: AppColors.primary,
-                              customBorderColor: AppColors.primary,
+                              customBackground: context.palette.primary,
+                              customBorderColor: context.palette.primary,
                               child: IconButton(
                                 icon: const Icon(
                                   Icons.chevron_left_rounded,
@@ -621,8 +629,8 @@ class _MapHomeViewState extends State<MapHomeView> {
                               padding: EdgeInsets.zero,
                               blurAmount: 0,
                               isDark: false,
-                              customBackground: AppColors.primary,
-                              customBorderColor: AppColors.primary,
+                              customBackground: context.palette.primary,
+                              customBorderColor: context.palette.primary,
                               child: IconButton(
                                 icon: const Icon(
                                   Icons.chevron_right_rounded,
@@ -863,7 +871,7 @@ class _MapHomeViewState extends State<MapHomeView> {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
       child: Container(
-        color: AppColors.primary,
+        color: context.palette.header,
         padding: EdgeInsets.fromLTRB(
           16,
           MediaQuery.of(context).padding.top + 6,
@@ -879,7 +887,7 @@ class _MapHomeViewState extends State<MapHomeView> {
                   backgroundColor: Colors.white,
                   child: Text(
                     name.substring(0, 1).toUpperCase(),
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.primary,
                       fontSize: 20,
                       fontWeight: FontWeight.w800,
@@ -986,12 +994,12 @@ class _MapHomeViewState extends State<MapHomeView> {
         button: true,
         toggled: isActive,
         child: Material(
-          color: on ? Colors.white : AppColors.primary,
+          color: on ? context.palette.surface : context.palette.primary,
           elevation: 3,
           shadowColor: Colors.black38,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
-            side: BorderSide(color: AppColors.primary, width: on ? 2 : 0),
+            side: BorderSide(color: context.palette.primary, width: on ? 2 : 0),
           ),
           child: InkWell(
             borderRadius: BorderRadius.circular(10),
@@ -1004,7 +1012,7 @@ class _MapHomeViewState extends State<MapHomeView> {
               height: 42,
               child: Icon(
                 icon,
-                color: on ? AppColors.primary : Colors.white,
+                color: on ? context.palette.primary : Colors.white,
                 size: 22,
               ),
             ),
@@ -1032,7 +1040,6 @@ class _MapHomeViewState extends State<MapHomeView> {
   }
 
   void _showCompanyBranchesSheet(BuildContext context, LocationLoaded loc) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -1040,12 +1047,8 @@ class _MapHomeViewState extends State<MapHomeView> {
       builder: (ctx) {
         return Container(
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF131926) : Colors.white,
+            color: context.palette.surface,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            border:
-                isDark
-                    ? Border.all(color: const Color(0x33FFFFFF), width: 0.8)
-                    : null,
           ),
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
           child: Column(
@@ -1057,7 +1060,7 @@ class _MapHomeViewState extends State<MapHomeView> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: isDark ? Colors.white24 : AppColors.borderLight,
+                    color: context.palette.border,
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
@@ -1097,18 +1100,14 @@ class _MapHomeViewState extends State<MapHomeView> {
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
-                            color:
-                                isDark ? Colors.white : AppColors.textPrimary,
+                            color: context.palette.textPrimary,
                           ),
                         ),
                         Text(
                           '${loc.companyBranches.length} sedes registradas en Lima',
                           style: TextStyle(
                             fontSize: 11,
-                            color:
-                                isDark
-                                    ? AppColors.textMuted
-                                    : AppColors.textSecondary,
+                            color: context.palette.textSecondary,
                           ),
                         ),
                       ],
@@ -1133,18 +1132,16 @@ class _MapHomeViewState extends State<MapHomeView> {
                       decoration: BoxDecoration(
                         color:
                             isCurrent
-                                ? AppColors.accent.withValues(alpha: 0.12)
-                                : (isDark
-                                    ? const Color(0xFF0D131F)
-                                    : const Color(0xFFF8FAFC)),
+                                ? context.palette.primary.withValues(
+                                  alpha: 0.12,
+                                )
+                                : (context.palette.background),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color:
                               isCurrent
-                                  ? AppColors.accent
-                                  : (isDark
-                                      ? const Color(0x22FFFFFF)
-                                      : AppColors.borderLight),
+                                  ? context.palette.primary
+                                  : (context.palette.border),
                           width: isCurrent ? 1.5 : 0.8,
                         ),
                       ),
@@ -1154,10 +1151,8 @@ class _MapHomeViewState extends State<MapHomeView> {
                           Icons.location_city_rounded,
                           color:
                               isCurrent
-                                  ? AppColors.accent
-                                  : (isDark
-                                      ? Colors.white60
-                                      : AppColors.textSecondary),
+                                  ? context.palette.primary
+                                  : (context.palette.textSecondary),
                         ),
                         title: Text(
                           branch.name,
@@ -1166,20 +1161,15 @@ class _MapHomeViewState extends State<MapHomeView> {
                             fontWeight: FontWeight.w700,
                             color:
                                 isCurrent
-                                    ? AppColors.accent
-                                    : (isDark
-                                        ? Colors.white
-                                        : AppColors.textPrimary),
+                                    ? context.palette.primary
+                                    : (context.palette.textPrimary),
                           ),
                         ),
                         subtitle: Text(
                           '${branch.address} • ${branch.geozones.length} centros autorizados',
                           style: TextStyle(
                             fontSize: 11,
-                            color:
-                                isDark
-                                    ? AppColors.textMuted
-                                    : AppColors.textSecondary,
+                            color: context.palette.textSecondary,
                           ),
                         ),
                         trailing:
@@ -1190,23 +1180,23 @@ class _MapHomeViewState extends State<MapHomeView> {
                                     vertical: 2,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: AppColors.accent.withValues(
+                                    color: context.palette.primary.withValues(
                                       alpha: 0.2,
                                     ),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
-                                  child: const Text(
+                                  child: Text(
                                     'ACTIVA',
                                     style: TextStyle(
-                                      color: AppColors.accent,
+                                      color: context.palette.primary,
                                       fontSize: 9,
                                       fontWeight: FontWeight.w800,
                                     ),
                                   ),
                                 )
-                                : const Icon(
+                                : Icon(
                                   Icons.arrow_forward_ios_rounded,
-                                  color: AppColors.textMuted,
+                                  color: context.palette.textMuted,
                                   size: 14,
                                 ),
                         onTap: () {

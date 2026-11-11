@@ -1,11 +1,8 @@
+import '../../core/theme/asis_palette.dart';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 
-enum AsisSecurityDialogType {
-  mockGpsDetected,
-  outsideGeozone,
-  policyWarning,
-}
+enum AsisSecurityDialogType { mockGpsDetected, outsideGeozone, policyWarning }
 
 class AsisSecurityDialog extends StatelessWidget {
   final AsisSecurityDialogType type;
@@ -37,14 +34,15 @@ class AsisSecurityDialog extends StatelessWidget {
     return showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => AsisSecurityDialog(
-        type: type,
-        title: title,
-        description: description,
-        badgeLabel: badgeLabel,
-        auditDetails: auditDetails,
-        onDismiss: onDismiss,
-      ),
+      builder:
+          (ctx) => AsisSecurityDialog(
+            type: type,
+            title: title,
+            description: description,
+            badgeLabel: badgeLabel,
+            auditDetails: auditDetails,
+            onDismiss: onDismiss,
+          ),
     );
   }
 
@@ -74,7 +72,7 @@ class AsisSecurityDialog extends StatelessWidget {
 
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      backgroundColor: Colors.white,
+      backgroundColor: context.palette.surface,
       contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
       actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       titlePadding: EdgeInsets.zero,
@@ -92,7 +90,10 @@ class AsisSecurityDialog extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: iconColor.withValues(alpha: 0.15),
-                border: Border.all(color: iconColor.withValues(alpha: 0.3), width: 1.5),
+                border: Border.all(
+                  color: iconColor.withValues(alpha: 0.3),
+                  width: 1.5,
+                ),
               ),
               child: Icon(iconData, color: iconColor, size: 30),
             ),
@@ -117,10 +118,10 @@ class AsisSecurityDialog extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w800,
-                color: AppColors.textPrimary,
+                color: context.palette.textPrimary,
                 letterSpacing: -0.3,
               ),
             ),
@@ -135,9 +136,9 @@ class AsisSecurityDialog extends StatelessWidget {
             Text(
               description,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
-                color: AppColors.textSecondary,
+                color: context.palette.textSecondary,
                 height: 1.45,
               ),
             ),
@@ -146,41 +147,42 @@ class AsisSecurityDialog extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.backgroundLight,
+                  color: context.palette.background,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.borderLight),
+                  border: Border.all(color: context.palette.border),
                 ),
                 child: Column(
-                  children: auditDetails!.entries.map((entry) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            entry.key,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: AppColors.textMuted,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          Flexible(
-                            child: Text(
-                              entry.value,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: AppColors.textPrimary,
-                                fontWeight: FontWeight.w700,
+                  children:
+                      auditDetails!.entries.map((entry) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                entry.key,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: context.palette.textMuted,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
-                              textAlign: TextAlign.end,
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                              Flexible(
+                                child: Text(
+                                  entry.value,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: context.palette.textPrimary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  textAlign: TextAlign.end,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
+                        );
+                      }).toList(),
                 ),
               ),
             ],
@@ -197,9 +199,11 @@ class AsisSecurityDialog extends StatelessWidget {
               onDismiss?.call();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
+              backgroundColor: context.palette.primary,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
               elevation: 0,
             ),
             child: const Text(

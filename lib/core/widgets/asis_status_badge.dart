@@ -1,14 +1,9 @@
+import '../../core/theme/asis_palette.dart';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import 'asis_radar_indicator.dart';
 
-enum AsisBadgeVariant {
-  success,
-  warning,
-  danger,
-  indigo,
-  neutral,
-}
+enum AsisBadgeVariant { success, warning, danger, indigo, neutral }
 
 class AsisStatusBadge extends StatelessWidget {
   final String label;
@@ -30,11 +25,11 @@ class AsisStatusBadge extends StatelessWidget {
     this.fontSize = 11,
   });
 
-  Color _resolveColor() {
+  Color _resolveColor(BuildContext context) {
     if (customColor != null) return customColor!;
     switch (variant) {
       case AsisBadgeVariant.success:
-        return AppColors.accent;
+        return context.palette.primary;
       case AsisBadgeVariant.warning:
         return AppColors.lunchColor;
       case AsisBadgeVariant.danger:
@@ -42,13 +37,13 @@ class AsisStatusBadge extends StatelessWidget {
       case AsisBadgeVariant.indigo:
         return AppColors.indigoAccent;
       case AsisBadgeVariant.neutral:
-        return AppColors.textSecondary;
+        return context.palette.textSecondary;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final color = _resolveColor();
+    final color = _resolveColor(context);
 
     return Container(
       padding: padding,

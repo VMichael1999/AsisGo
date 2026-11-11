@@ -1,6 +1,6 @@
+import '../../../../core/theme/asis_palette.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/haptic_feedback_service.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../domain/incident_justification.dart';
@@ -85,10 +85,9 @@ class _JustificationsViewState extends State<JustificationsView> {
       },
       builder: (context, state) {
         return Scaffold(
-          backgroundColor: AppColors.backgroundLight,
+          backgroundColor: context.palette.background,
           appBar: AppBar(
             title: const Text('Mis justificaciones'),
-            backgroundColor: AppColors.primary,
             elevation: 0,
           ),
           body: _buildBody(context, state),
@@ -97,7 +96,7 @@ class _JustificationsViewState extends State<JustificationsView> {
               HapticFeedbackService.shared.selectionClick();
               await NewJustificationSheet.show(context);
             },
-            backgroundColor: AppColors.primary,
+            backgroundColor: context.palette.primary,
             foregroundColor: Colors.white,
             icon: const Icon(Icons.add_rounded),
             label: const Text(
@@ -118,8 +117,8 @@ class _JustificationsViewState extends State<JustificationsView> {
 
   Widget _buildBody(BuildContext context, JustificationState state) {
     if (state is JustificationLoading || state is JustificationInitial) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
+      return Center(
+        child: CircularProgressIndicator(color: context.palette.primary),
       );
     }
 
@@ -130,18 +129,18 @@ class _JustificationsViewState extends State<JustificationsView> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.cloud_off_rounded,
-                color: AppColors.textSecondary,
+                color: context.palette.textSecondary,
                 size: 48,
               ),
               const SizedBox(height: 12),
               Text(
                 state.message,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
-                  color: AppColors.textPrimary,
+                  color: context.palette.textPrimary,
                 ),
               ),
               const SizedBox(height: 16),
@@ -164,7 +163,7 @@ class _JustificationsViewState extends State<JustificationsView> {
         _StatusFilterBar(loaded: loaded),
         Expanded(
           child: RefreshIndicator(
-            color: AppColors.primary,
+            color: context.palette.primary,
             onRefresh: () => _reload(context),
             child:
                 items.isEmpty
@@ -212,29 +211,29 @@ class _JustificationsViewState extends State<JustificationsView> {
       padding: const EdgeInsets.fromLTRB(32, 64, 32, 32),
       child: Column(
         children: [
-          const Icon(
+          Icon(
             Icons.inbox_outlined,
             size: 48,
-            color: AppColors.textMuted,
+            color: context.palette.textMuted,
           ),
           const SizedBox(height: 16),
           Text(
             title,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: context.palette.textPrimary,
             ),
           ),
           const SizedBox(height: 6),
           Text(
             message,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               height: 1.4,
-              color: AppColors.textSecondary,
+              color: context.palette.textSecondary,
             ),
           ),
         ],
@@ -274,10 +273,13 @@ class _StatusFilterBar extends StatelessWidget {
             selected: selected,
             button: true,
             child: Material(
-              color: selected ? AppColors.primary : Colors.white,
+              color: selected ? context.palette.primary : context.palette.surface,
               shape: StadiumBorder(
                 side: BorderSide(
-                  color: selected ? AppColors.primary : AppColors.borderLight,
+                  color:
+                      selected
+                          ? context.palette.primary
+                          : context.palette.border,
                 ),
               ),
               child: InkWell(
@@ -297,7 +299,9 @@ class _StatusFilterBar extends StatelessWidget {
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color:
-                              selected ? Colors.white : AppColors.textPrimary,
+                              selected
+                                  ? Colors.white
+                                  : context.palette.textPrimary,
                         ),
                       ),
                       const SizedBox(width: 6),
@@ -309,7 +313,7 @@ class _StatusFilterBar extends StatelessWidget {
                           color:
                               selected
                                   ? Colors.white70
-                                  : AppColors.textSecondary,
+                                  : context.palette.textSecondary,
                         ),
                       ),
                     ],

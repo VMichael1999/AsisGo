@@ -1,6 +1,6 @@
+import '../core/theme/asis_palette.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../core/constants/app_colors.dart';
 import '../core/services/haptic_feedback_service.dart';
 import '../core/widgets/asis_session_expired_dialog.dart';
 import '../features/attendance_map/presentation/views/branches_view.dart';
@@ -64,29 +64,26 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
         }
       },
       child: Scaffold(
-        body: IndexedStack(
-          index: _currentIndex,
-          children: _screens,
-        ),
+        body: IndexedStack(index: _currentIndex, children: _screens),
         bottomNavigationBar: BlocBuilder<LocationCubit, LocationState>(
           builder: (context, locationState) {
-            final isMapLoading = (locationState is LocationLoading || locationState is LocationInitial) &&
+            final isMapLoading =
+                (locationState is LocationLoading ||
+                    locationState is LocationInitial) &&
                 _currentIndex == 0;
 
             if (isMapLoading) {
               return const IgnorePointer(
                 ignoring: true,
-                child: AsisShimmer(
-                  child: AsisBottomNavSkeleton(),
-                ),
+                child: AsisShimmer(child: AsisBottomNavSkeleton()),
               );
             }
 
             return Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
+              decoration: BoxDecoration(
+                color: context.palette.surface,
                 border: Border(
-                  top: BorderSide(color: AppColors.borderLight, width: 0.8),
+                  top: BorderSide(color: context.palette.border, width: 0.8),
                 ),
               ),
               child: SafeArea(
@@ -104,25 +101,49 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                     }
                   },
                   elevation: 0,
-                  destinations: const [
+                  destinations: [
                     NavigationDestination(
-                      icon: Icon(Icons.map_outlined, color: AppColors.textSecondary),
-                      selectedIcon: Icon(Icons.map_rounded, color: AppColors.accent),
+                      icon: Icon(
+                        Icons.map_outlined,
+                        color: context.palette.textSecondary,
+                      ),
+                      selectedIcon: Icon(
+                        Icons.map_rounded,
+                        color: context.palette.primary,
+                      ),
                       label: 'Asistencia',
                     ),
                     NavigationDestination(
-                      icon: Icon(Icons.calendar_month_outlined, color: AppColors.textSecondary),
-                      selectedIcon: Icon(Icons.calendar_month_rounded, color: AppColors.accent),
+                      icon: Icon(
+                        Icons.calendar_month_outlined,
+                        color: context.palette.textSecondary,
+                      ),
+                      selectedIcon: Icon(
+                        Icons.calendar_month_rounded,
+                        color: context.palette.primary,
+                      ),
                       label: 'Calendario',
                     ),
                     NavigationDestination(
-                      icon: Icon(Icons.apartment_outlined, color: AppColors.textSecondary),
-                      selectedIcon: Icon(Icons.apartment_rounded, color: AppColors.accent),
+                      icon: Icon(
+                        Icons.apartment_outlined,
+                        color: context.palette.textSecondary,
+                      ),
+                      selectedIcon: Icon(
+                        Icons.apartment_rounded,
+                        color: context.palette.primary,
+                      ),
                       label: 'Sucursales',
                     ),
                     NavigationDestination(
-                      icon: Icon(Icons.person_outline_rounded, color: AppColors.textSecondary),
-                      selectedIcon: Icon(Icons.person_rounded, color: AppColors.accent),
+                      icon: Icon(
+                        Icons.person_outline_rounded,
+                        color: context.palette.textSecondary,
+                      ),
+                      selectedIcon: Icon(
+                        Icons.person_rounded,
+                        color: context.palette.primary,
+                      ),
                       label: 'Mi Perfil',
                     ),
                   ],

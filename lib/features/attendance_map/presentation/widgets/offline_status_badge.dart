@@ -1,3 +1,4 @@
+import '../../../../core/theme/asis_palette.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/asis_glass_card.dart';
@@ -58,12 +59,15 @@ class _OfflineStatusBadgeState extends State<OfflineStatusBadge>
   @override
   Widget build(BuildContext context) {
     // Si esta en linea y no hay marcas pendientes, ocultar
-    if (!widget.isOffline && widget.pendingSyncCount == 0 && !widget.isSyncing) {
+    if (!widget.isOffline &&
+        widget.pendingSyncCount == 0 &&
+        !widget.isSyncing) {
       return const SizedBox.shrink();
     }
 
     final isOffline = widget.isOffline;
-    final badgeColor = isOffline ? const Color(0xFFF59E0B) : AppColors.infoColor;
+    final badgeColor =
+        isOffline ? const Color(0xFFF59E0B) : AppColors.infoColor;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -71,7 +75,7 @@ class _OfflineStatusBadgeState extends State<OfflineStatusBadge>
         borderRadius: 16,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         isDark: false,
-        customBackground: const Color(0xF5FFFFFF),
+        customBackground: context.palette.surface,
         customBorderColor: badgeColor.withValues(alpha: 0.4),
         child: Row(
           children: [
@@ -83,7 +87,9 @@ class _OfflineStatusBadgeState extends State<OfflineStatusBadge>
               )
             else
               Icon(
-                isOffline ? Icons.wifi_off_rounded : Icons.cloud_upload_outlined,
+                isOffline
+                    ? Icons.wifi_off_rounded
+                    : Icons.cloud_upload_outlined,
                 color: badgeColor,
                 size: 18,
               ),
@@ -99,8 +105,8 @@ class _OfflineStatusBadgeState extends State<OfflineStatusBadge>
                     isOffline
                         ? 'MODO SIN CONEXIÓN'
                         : widget.isSyncing
-                            ? 'SINCRONIZANDO MARCAS...'
-                            : 'MARCAS PENDIENTES',
+                        ? 'SINCRONIZANDO MARCAS...'
+                        : 'MARCAS PENDIENTES',
                     style: TextStyle(
                       color: badgeColor,
                       fontSize: 10,
@@ -115,8 +121,8 @@ class _OfflineStatusBadgeState extends State<OfflineStatusBadge>
                             ? '${widget.pendingSyncCount} marca(s) guardada(s) localmente'
                             : 'Marcas se guardarán y enviarán al volver la red')
                         : '${widget.pendingSyncCount} registro(s) por sincronizar con el servidor',
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
+                    style: TextStyle(
+                      color: context.palette.textPrimary,
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
                     ),
@@ -128,22 +134,33 @@ class _OfflineStatusBadgeState extends State<OfflineStatusBadge>
             ),
 
             // Boton de sincronizacion manual si no esta sincronizando
-            if (!isOffline && widget.pendingSyncCount > 0 && !widget.isSyncing) ...[
+            if (!isOffline &&
+                widget.pendingSyncCount > 0 &&
+                !widget.isSyncing) ...[
               const SizedBox(width: 8),
               InkWell(
                 onTap: widget.onSyncTap,
                 borderRadius: BorderRadius.circular(10),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.infoColor.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.infoColor.withValues(alpha: 0.4)),
+                    border: Border.all(
+                      color: AppColors.infoColor.withValues(alpha: 0.4),
+                    ),
                   ),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.sync_rounded, size: 13, color: AppColors.infoColor),
+                      Icon(
+                        Icons.sync_rounded,
+                        size: 13,
+                        color: AppColors.infoColor,
+                      ),
                       SizedBox(width: 4),
                       Text(
                         'Sincronizar',

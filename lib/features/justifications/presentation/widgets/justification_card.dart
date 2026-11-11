@@ -1,6 +1,6 @@
+import '../../../../core/theme/asis_palette.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
 import '../../domain/incident_justification.dart';
 
 class JustificationCard extends StatelessWidget {
@@ -11,14 +11,14 @@ class JustificationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusColor = _getStatusColor(item.status);
+    final statusColor = _getStatusColor(context, item.status);
     final isPdf = item.attachmentType?.contains('pdf') == true;
 
     return Material(
-      color: Colors.white,
+      color: context.palette.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.borderLight),
+        side: BorderSide(color: context.palette.border),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -32,11 +32,11 @@ class JustificationCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     item.title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                       height: 1.3,
-                      color: AppColors.textPrimary,
+                      color: context.palette.textPrimary,
                     ),
                   ),
                 ),
@@ -52,15 +52,15 @@ class JustificationCard extends StatelessWidget {
                 Icon(
                   _getTypeIcon(item.type),
                   size: 16,
-                  color: AppColors.textSecondary,
+                  color: context.palette.textSecondary,
                 ),
                 const SizedBox(width: 6),
                 Flexible(
                   child: Text(
                     '${item.type.label} · ${_formatDate(item.incidentDate)}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
-                      color: AppColors.textSecondary,
+                      color: context.palette.textSecondary,
                     ),
                   ),
                 ),
@@ -71,10 +71,10 @@ class JustificationCard extends StatelessWidget {
             // Motivo
             Text(
               item.reason,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 height: 1.45,
-                color: AppColors.textPrimary,
+                color: context.palette.textPrimary,
               ),
             ),
 
@@ -82,7 +82,7 @@ class JustificationCard extends StatelessWidget {
             if (item.hasAttachment) ...[
               const SizedBox(height: 12),
               Material(
-                color: AppColors.backgroundLight,
+                color: context.palette.background,
                 borderRadius: BorderRadius.circular(10),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(10),
@@ -98,16 +98,16 @@ class JustificationCard extends StatelessWidget {
                                 ? Icons.picture_as_pdf_outlined
                                 : Icons.image_outlined,
                             size: 20,
-                            color: AppColors.textSecondary,
+                            color: context.palette.textSecondary,
                           ),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
                               item.attachmentName ?? 'Archivo adjunto',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
+                                color: context.palette.textPrimary,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -117,17 +117,17 @@ class JustificationCard extends StatelessWidget {
                             const SizedBox(width: 8),
                             Text(
                               '${(item.fileSizeBytes! / 1024).toStringAsFixed(0)} KB',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
-                                color: AppColors.textSecondary,
+                                color: context.palette.textSecondary,
                               ),
                             ),
                           ],
                           const SizedBox(width: 4),
-                          const Icon(
+                          Icon(
                             Icons.chevron_right_rounded,
                             size: 20,
-                            color: AppColors.textMuted,
+                            color: context.palette.textMuted,
                             semanticLabel: 'Ver adjunto',
                           ),
                         ],
@@ -154,21 +154,21 @@ class JustificationCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Respuesta de RR. HH.',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textSecondary,
+                        color: context.palette.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       item.reviewerNotes!,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         height: 1.4,
-                        color: AppColors.textPrimary,
+                        color: context.palette.textPrimary,
                       ),
                     ),
                   ],
@@ -182,7 +182,6 @@ class JustificationCard extends StatelessWidget {
   }
 
   void _showAttachmentPreview(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isImage =
         item.attachmentType?.contains('image') == true ||
         item.attachmentPath?.endsWith('.jpg') == true ||
@@ -192,7 +191,7 @@ class JustificationCard extends StatelessWidget {
       context: context,
       builder:
           (ctx) => AlertDialog(
-            backgroundColor: isDark ? const Color(0xFF131926) : Colors.white,
+            backgroundColor: context.palette.surface,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(18),
             ),
@@ -200,7 +199,7 @@ class JustificationCard extends StatelessWidget {
               children: [
                 Icon(
                   isImage ? Icons.image_rounded : Icons.picture_as_pdf_rounded,
-                  color: isImage ? AppColors.accent : Colors.redAccent,
+                  color: isImage ? context.palette.primary : Colors.redAccent,
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -234,17 +233,9 @@ class JustificationCard extends StatelessWidget {
                     height: 180,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color:
-                          isDark
-                              ? const Color(0xFF1E2638)
-                              : const Color(0xFFF1F5F9),
+                      color: context.palette.surfaceAlt,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color:
-                            isDark
-                                ? const Color(0x33FFFFFF)
-                                : AppColors.borderLight,
-                      ),
+                      border: Border.all(color: context.palette.border),
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -254,7 +245,10 @@ class JustificationCard extends StatelessWidget {
                               ? Icons.image_rounded
                               : Icons.description_rounded,
                           size: 48,
-                          color: isImage ? AppColors.accent : Colors.redAccent,
+                          color:
+                              isImage
+                                  ? context.palette.primary
+                                  : Colors.redAccent,
                         ),
                         const SizedBox(height: 12),
                         Text(
@@ -305,16 +299,15 @@ class JustificationCard extends StatelessWidget {
     }
   }
 
-  Color _getStatusColor(JustificationStatus status) {
+  Color _getStatusColor(BuildContext context, JustificationStatus status) {
+    final p = context.palette;
     switch (status) {
       case JustificationStatus.pending:
-        return const Color(
-          0xFFB45309,
-        ); // ambar oscuro: contraste AA sobre fondo claro
+        return p.warning;
       case JustificationStatus.approved:
-        return const Color(0xFF047857); // verde oscuro
+        return p.success;
       case JustificationStatus.rejected:
-        return AppColors.checkOutColor;
+        return p.danger;
     }
   }
 

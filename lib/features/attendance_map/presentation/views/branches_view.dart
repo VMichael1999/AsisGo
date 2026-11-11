@@ -1,6 +1,6 @@
+import '../../../../core/theme/asis_palette.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/haptic_feedback_service.dart';
 import '../../../../core/widgets/asis_shimmer.dart';
 import '../../../../core/widgets/asis_skeletons.dart';
@@ -39,10 +39,9 @@ class _BranchesViewState extends State<BranchesView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: context.palette.background,
       appBar: AppBar(
         title: const Text('Seleccionar empresa'),
-        backgroundColor: AppColors.primary,
         elevation: 0,
         centerTitle: false,
       ),
@@ -89,12 +88,10 @@ class _BranchesViewState extends State<BranchesView> {
                               },
                             ),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: context.palette.surface,
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(
-                        color: AppColors.borderLight,
-                      ),
+                      borderSide: BorderSide(color: context.palette.border),
                     ),
                   ),
                 ),
@@ -102,20 +99,19 @@ class _BranchesViewState extends State<BranchesView> {
               Expanded(
                 child:
                     companies.isEmpty
-                        ? const Center(
+                        ? Center(
                           child: Text(
                             'No hay empresas que coincidan con la búsqueda.',
                             style: TextStyle(
                               fontSize: 14,
-                              color: AppColors.textSecondary,
+                              color: context.palette.textSecondary,
                             ),
                           ),
                         )
                         : ListView.separated(
                           padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
                           itemCount: companies.length,
-                          separatorBuilder:
-                              (_, _) => const SizedBox(height: 8),
+                          separatorBuilder: (_, _) => const SizedBox(height: 8),
                           itemBuilder: (context, index) {
                             final company = companies[index];
                             return _CompanyTile(
@@ -173,11 +169,11 @@ class _CompanyTile extends StatelessWidget {
             : company.shortName;
 
     return Material(
-      color: Colors.white,
+      color: context.palette.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
         side: BorderSide(
-          color: isActive ? AppColors.primary : AppColors.borderLight,
+          color: isActive ? context.palette.primary : context.palette.border,
           width: isActive ? 1.5 : 1,
         ),
       ),
@@ -199,13 +195,13 @@ class _CompanyTile extends StatelessWidget {
                       height: 44,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
+                        color: context.palette.surfaceAlt,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         monogram,
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
+                        style: TextStyle(
+                          color: context.palette.textSecondary,
                           fontWeight: FontWeight.w800,
                           fontSize: 12,
                         ),
@@ -218,29 +214,29 @@ class _CompanyTile extends StatelessWidget {
                         children: [
                           Text(
                             company.name,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
+                              color: context.palette.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             '$branchCount ${branchCount == 1 ? 'sucursal' : 'sucursales'}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13,
-                              color: AppColors.textSecondary,
+                              color: context.palette.textSecondary,
                             ),
                           ),
                         ],
                       ),
                     ),
                     if (isActive)
-                      const Padding(
+                      Padding(
                         padding: EdgeInsets.only(left: 8),
                         child: Icon(
                           Icons.check_circle_rounded,
-                          color: AppColors.primary,
+                          color: context.palette.primary,
                           size: 24,
                           semanticLabel: 'Empresa seleccionada',
                         ),
@@ -257,9 +253,9 @@ class _CompanyTile extends StatelessWidget {
                       icon: AnimatedRotation(
                         turns: isExpanded ? 0.5 : 0,
                         duration: const Duration(milliseconds: 200),
-                        child: const Icon(
+                        child: Icon(
                           Icons.keyboard_arrow_down_rounded,
-                          color: AppColors.textSecondary,
+                          color: context.palette.textSecondary,
                           size: 26,
                         ),
                       ),
@@ -272,7 +268,7 @@ class _CompanyTile extends StatelessWidget {
 
           // Sucursales de la empresa
           if (isExpanded) ...[
-            const Divider(height: 1, color: AppColors.borderLight),
+            Divider(height: 1, color: context.palette.border),
             for (final branch in company.branches)
               _BranchRow(
                 branch: branch,
@@ -306,14 +302,17 @@ class _BranchRow extends StatelessWidget {
         onTap: onTap,
         child: Container(
           constraints: const BoxConstraints(minHeight: 52),
-          color: isActive ? AppColors.accentLight : null,
+          color: isActive ? context.palette.primarySoft : null,
           padding: const EdgeInsets.fromLTRB(26, 8, 16, 8),
           child: Row(
             children: [
               Icon(
                 Icons.location_city_rounded,
                 size: 20,
-                color: isActive ? AppColors.primary : AppColors.textSecondary,
+                color:
+                    isActive
+                        ? context.palette.primary
+                        : context.palette.textSecondary,
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -327,24 +326,24 @@ class _BranchRow extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                         color:
                             isActive
-                                ? AppColors.primary
-                                : AppColors.textPrimary,
+                                ? context.palette.primary
+                                : context.palette.textPrimary,
                       ),
                     ),
                     Text(
                       branch.address,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: AppColors.textSecondary,
+                        color: context.palette.textSecondary,
                       ),
                     ),
                   ],
                 ),
               ),
               if (isActive)
-                const Icon(
+                Icon(
                   Icons.check_rounded,
-                  color: AppColors.primary,
+                  color: context.palette.primary,
                   size: 20,
                 ),
             ],

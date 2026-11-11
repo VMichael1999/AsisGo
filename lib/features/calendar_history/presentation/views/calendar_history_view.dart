@@ -1,8 +1,8 @@
+import '../../../../core/theme/asis_palette.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:asisgo/core/constants/app_colors.dart';
 import 'package:asisgo/core/utils/date_formatter.dart';
 import 'package:asisgo/core/services/haptic_feedback_service.dart';
 import 'package:asisgo/core/widgets/asis_shimmer.dart';
@@ -18,11 +18,11 @@ import 'package:asisgo/features/justifications/presentation/widgets/new_justific
 
 /// Colores y textos de cada estado de jornada (siempre acompanados de texto).
 extension DayStatusStyle on DayStatus {
-  Color get color => switch (this) {
-    DayStatus.complete => const Color(0xFF047857),
-    DayStatus.late => const Color(0xFFB45309),
-    DayStatus.incomplete => AppColors.checkOutColor,
-    DayStatus.inProgress => AppColors.primary,
+  Color colorIn(BuildContext context) => switch (this) {
+    DayStatus.complete => context.palette.success,
+    DayStatus.late => context.palette.warning,
+    DayStatus.incomplete => context.palette.danger,
+    DayStatus.inProgress => context.palette.primary,
   };
 
   String get label => switch (this) {
@@ -61,10 +61,9 @@ class _CalendarHistoryViewState extends State<CalendarHistoryView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: context.palette.background,
       appBar: AppBar(
         title: const Text('Historial'),
-        backgroundColor: AppColors.primary,
         elevation: 0,
         actions: [
           IconButton(
@@ -96,9 +95,9 @@ class _CalendarHistoryViewState extends State<CalendarHistoryView> {
                     Text(
                       state.message,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
-                        color: AppColors.textPrimary,
+                        color: context.palette.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -115,7 +114,7 @@ class _CalendarHistoryViewState extends State<CalendarHistoryView> {
           final data = state as CalendarLoaded;
 
           return RefreshIndicator(
-            color: AppColors.primary,
+            color: context.palette.primary,
             onRefresh: _reload,
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -139,10 +138,10 @@ class _CalendarHistoryViewState extends State<CalendarHistoryView> {
 
   Widget _buildCalendarCard(BuildContext context, CalendarLoaded data) {
     return Material(
-      color: Colors.white,
+      color: context.palette.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.borderLight),
+        side: BorderSide(color: context.palette.border),
       ),
       clipBehavior: Clip.antiAlias,
       child: Padding(
@@ -186,51 +185,51 @@ class _CalendarHistoryViewState extends State<CalendarHistoryView> {
                     (date, locale) => toBeginningOfSentenceCase(
                       DateFormat('MMMM yyyy', locale).format(date),
                     ),
-                titleTextStyle: const TextStyle(
+                titleTextStyle: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: context.palette.textPrimary,
                 ),
                 formatButtonDecoration: BoxDecoration(
-                  color: AppColors.backgroundLight,
+                  color: context.palette.background,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.borderLight),
+                  border: Border.all(color: context.palette.border),
                 ),
-                formatButtonTextStyle: const TextStyle(
-                  color: AppColors.textPrimary,
+                formatButtonTextStyle: TextStyle(
+                  color: context.palette.textPrimary,
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),
-                leftChevronIcon: const Icon(
+                leftChevronIcon: Icon(
                   Icons.chevron_left_rounded,
-                  color: AppColors.textPrimary,
+                  color: context.palette.textPrimary,
                 ),
-                rightChevronIcon: const Icon(
+                rightChevronIcon: Icon(
                   Icons.chevron_right_rounded,
-                  color: AppColors.textPrimary,
+                  color: context.palette.textPrimary,
                 ),
               ),
-              daysOfWeekStyle: const DaysOfWeekStyle(
+              daysOfWeekStyle: DaysOfWeekStyle(
                 weekdayStyle: TextStyle(
-                  color: AppColors.textSecondary,
+                  color: context.palette.textSecondary,
                   fontWeight: FontWeight.w600,
                   fontSize: 12,
                 ),
                 weekendStyle: TextStyle(
-                  color: AppColors.textMuted,
+                  color: context.palette.textMuted,
                   fontWeight: FontWeight.w600,
                   fontSize: 12,
                 ),
               ),
               calendarStyle: CalendarStyle(
-                defaultTextStyle: const TextStyle(color: AppColors.textPrimary),
-                weekendTextStyle: const TextStyle(
-                  color: AppColors.textSecondary,
+                defaultTextStyle: TextStyle(color: context.palette.textPrimary),
+                weekendTextStyle: TextStyle(
+                  color: context.palette.textSecondary,
                 ),
-                outsideTextStyle: const TextStyle(color: AppColors.textMuted),
+                outsideTextStyle: TextStyle(color: context.palette.textMuted),
                 // Seleccionado: relleno. Hoy: solo borde.
-                selectedDecoration: const BoxDecoration(
-                  color: AppColors.primary,
+                selectedDecoration: BoxDecoration(
+                  color: context.palette.primary,
                   shape: BoxShape.circle,
                 ),
                 selectedTextStyle: const TextStyle(
@@ -239,10 +238,13 @@ class _CalendarHistoryViewState extends State<CalendarHistoryView> {
                 ),
                 todayDecoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.primary, width: 1.5),
+                  border: Border.all(
+                    color: context.palette.primary,
+                    width: 1.5,
+                  ),
                 ),
-                todayTextStyle: const TextStyle(
-                  color: AppColors.primary,
+                todayTextStyle: TextStyle(
+                  color: context.palette.primary,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -255,7 +257,7 @@ class _CalendarHistoryViewState extends State<CalendarHistoryView> {
                       width: 6,
                       height: 6,
                       decoration: BoxDecoration(
-                        color: events.first.status.color,
+                        color: events.first.status.colorIn(context),
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -294,10 +296,10 @@ class _MonthSummaryCard extends StatelessWidget {
     );
 
     return Material(
-      color: Colors.white,
+      color: context.palette.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.borderLight),
+        side: BorderSide(color: context.palette.border),
       ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
@@ -306,10 +308,10 @@ class _MonthSummaryCard extends StatelessWidget {
           children: [
             Text(
               'Resumen de $monthName',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textSecondary,
+                color: context.palette.textSecondary,
               ),
             ),
             const SizedBox(height: 12),
@@ -320,15 +322,9 @@ class _MonthSummaryCard extends StatelessWidget {
                     value: '${summary.daysAttended}',
                     label: 'Días asistidos',
                   ),
-                  const VerticalDivider(
-                    color: AppColors.borderLight,
-                    width: 24,
-                  ),
+                  VerticalDivider(color: context.palette.border, width: 24),
                   _Stat(value: '${summary.lateDays}', label: 'Tardanzas'),
-                  const VerticalDivider(
-                    color: AppColors.borderLight,
-                    width: 24,
-                  ),
+                  VerticalDivider(color: context.palette.border, width: 24),
                   _Stat(
                     value: _formatHours(summary.worked),
                     label: 'Horas trabajadas',
@@ -364,19 +360,19 @@ class _Stat extends StatelessWidget {
         children: [
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w800,
-              color: AppColors.textPrimary,
+              color: context.palette.textPrimary,
               fontFeatures: [FontFeature.tabularFigures()],
             ),
           ),
           const SizedBox(height: 2),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              color: AppColors.textSecondary,
+              color: context.palette.textSecondary,
             ),
           ),
         ],
@@ -399,14 +395,14 @@ class _LegendItem extends StatelessWidget {
           width: 8,
           height: 8,
           decoration: BoxDecoration(
-            color: status.color,
+            color: status.colorIn(context),
             shape: BoxShape.circle,
           ),
         ),
         const SizedBox(width: 6),
         Text(
           status.label,
-          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+          style: TextStyle(fontSize: 12, color: context.palette.textSecondary),
         ),
       ],
     );
@@ -440,10 +436,10 @@ class _DayDetail extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: context.palette.textPrimary,
                 ),
               ),
             ),
@@ -452,10 +448,10 @@ class _DayDetail extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         Material(
-          color: Colors.white,
+          color: context.palette.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(color: AppColors.borderLight),
+            side: BorderSide(color: context.palette.border),
           ),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
@@ -470,14 +466,14 @@ class _DayDetail extends StatelessWidget {
                             record: s.recordOf(_steps[i]),
                             isLast: i == _steps.length - 1,
                           ),
-                        const Divider(color: AppColors.borderLight, height: 20),
+                        Divider(color: context.palette.border, height: 20),
                         Row(
                           children: [
-                            const Text(
+                            Text(
                               'Horas trabajadas',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: AppColors.textSecondary,
+                                color: context.palette.textSecondary,
                               ),
                             ),
                             const Spacer(),
@@ -487,10 +483,10 @@ class _DayDetail extends StatelessWidget {
                                   : s.status == DayStatus.inProgress
                                   ? '${_formatHours(s.worked)} (en curso)'
                                   : _formatHours(s.worked),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
+                                color: context.palette.textPrimary,
                               ),
                             ),
                           ],
@@ -513,8 +509,8 @@ class _DayDetail extends StatelessWidget {
               icon: const Icon(Icons.edit_note_rounded),
               label: const Text('Justificar este día'),
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.primary,
-                side: const BorderSide(color: AppColors.primary),
+                foregroundColor: context.palette.primary,
+                side: BorderSide(color: context.palette.primary),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -541,7 +537,7 @@ class _StatusChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: status.color.withValues(alpha: 0.1),
+        color: status.colorIn(context).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
@@ -549,7 +545,7 @@ class _StatusChip extends StatelessWidget {
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w700,
-          color: status.color,
+          color: status.colorIn(context),
         ),
       ),
     );
@@ -561,7 +557,7 @@ class _EmptyDay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
+    return Padding(
       padding: EdgeInsets.symmetric(vertical: 16),
       child: Center(
         child: Column(
@@ -569,12 +565,15 @@ class _EmptyDay extends StatelessWidget {
             Icon(
               Icons.event_available_outlined,
               size: 36,
-              color: AppColors.textMuted,
+              color: context.palette.textMuted,
             ),
             SizedBox(height: 8),
             Text(
               'Sin marcaciones este día',
-              style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+              style: TextStyle(
+                fontSize: 14,
+                color: context.palette.textSecondary,
+              ),
             ),
           ],
         ),
@@ -614,16 +613,19 @@ class _TimelineStep extends StatelessWidget {
                   height: 12,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: done ? AppColors.primary : Colors.white,
+                    color: done ? context.palette.primary : context.palette.surface,
                     border: Border.all(
-                      color: done ? AppColors.primary : AppColors.textMuted,
+                      color:
+                          done
+                              ? context.palette.primary
+                              : context.palette.textMuted,
                       width: 2,
                     ),
                   ),
                 ),
                 if (!isLast)
                   Expanded(
-                    child: Container(width: 2, color: AppColors.borderLight),
+                    child: Container(width: 2, color: context.palette.border),
                   ),
               ],
             ),
@@ -645,8 +647,8 @@ class _TimelineStep extends StatelessWidget {
                             fontWeight: FontWeight.w600,
                             color:
                                 done
-                                    ? AppColors.textPrimary
-                                    : AppColors.textSecondary,
+                                    ? context.palette.textPrimary
+                                    : context.palette.textSecondary,
                           ),
                         ),
                       ),
@@ -659,8 +661,8 @@ class _TimelineStep extends StatelessWidget {
                           fontWeight: done ? FontWeight.w700 : FontWeight.w400,
                           color:
                               done
-                                  ? AppColors.textPrimary
-                                  : AppColors.textMuted,
+                                  ? context.palette.textPrimary
+                                  : context.palette.textMuted,
                           fontFeatures: const [FontFeature.tabularFigures()],
                         ),
                       ),
@@ -677,17 +679,17 @@ class _TimelineStep extends StatelessWidget {
                         fontSize: 13,
                         color:
                             r.isInsideGeozone
-                                ? AppColors.textSecondary
-                                : const Color(0xFFB45309),
+                                ? context.palette.textSecondary
+                                : context.palette.warning,
                       ),
                     ),
                     if (r.note != null && r.note!.isNotEmpty) ...[
                       const SizedBox(height: 2),
                       Text(
                         '“${r.note!}”',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
-                          color: AppColors.textSecondary,
+                          color: context.palette.textSecondary,
                         ),
                       ),
                     ],
