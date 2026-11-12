@@ -145,33 +145,50 @@ struct RemainingTimer: View {
 }
 
 // MARK: - Isla expandida
+// Todo va en las zonas superiores (a los lados de la camara) para no dejar
+// una franja negra vacia arriba.
 
+/// Zona izquierda: anillo con icono, titulo y horario.
 @available(iOS 16.1, *)
-struct ExpandedShiftView: View {
+struct ExpandedLeadingView: View {
     let data: ShiftData
 
     var body: some View {
-        HStack(spacing: 12) {
-            ShiftRing(data: data, size: 38, iconSize: 14)
-            VStack(alignment: .leading, spacing: 2) {
+        HStack(spacing: 10) {
+            ShiftRing(data: data, size: 36, iconSize: 13)
+            VStack(alignment: .leading, spacing: 1) {
                 Text(data.title)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(.white)
                     .lineLimit(1)
                 Text(data.schedule)
-                    .font(.system(size: 12))
+                    .font(.system(size: 11))
                     .foregroundColor(AsisColors.gray)
                     .lineLimit(1)
+                    .minimumScaleFactor(0.85)
             }
-            Spacer(minLength: 8)
-            ElapsedTimer(since: data.timerStart)
-                .font(.system(size: 32, weight: .medium))
-                .foregroundColor(data.accent)
-                .multilineTextAlignment(.trailing)
-                .frame(width: 128, alignment: .trailing)
+            .fixedSize(horizontal: true, vertical: false)
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 4)
+        .frame(maxHeight: .infinity, alignment: .center)
+        .padding(.leading, 6)
+    }
+}
+
+/// Zona derecha: contador grande.
+@available(iOS 16.1, *)
+struct ExpandedTrailingView: View {
+    let data: ShiftData
+
+    var body: some View {
+        ElapsedTimer(since: data.timerStart)
+            .font(.system(size: 30, weight: .medium))
+            .foregroundColor(data.accent)
+            .multilineTextAlignment(.trailing)
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
+            .frame(width: 112, alignment: .trailing)
+            .frame(maxHeight: .infinity, alignment: .center)
+            .padding(.trailing, 6)
     }
 }
 
@@ -257,8 +274,11 @@ struct LiveIslandWidget: Widget {
         } dynamicIsland: { context in
             let data = ShiftData(context.state)
             return DynamicIsland {
-                DynamicIslandExpandedRegion(.bottom) {
-                    ExpandedShiftView(data: data)
+                DynamicIslandExpandedRegion(.leading, priority: 1) {
+                    ExpandedLeadingView(data: data)
+                }
+                DynamicIslandExpandedRegion(.trailing) {
+                    ExpandedTrailingView(data: data)
                 }
             } compactLeading: {
                 Image(systemName: data.isLunch ? "fork.knife" : "checkmark.circle")
@@ -268,7 +288,9 @@ struct LiveIslandWidget: Widget {
                 ShortElapsedTimer(since: data.timerStart)
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(data.accent)
-                    .frame(maxWidth: 64, alignment: .trailing)
+                    .lineLimit(1)
+                    .multilineTextAlignment(.trailing)
+                    .frame(width: 40, alignment: .trailing)
             } minimal: {
                 ShiftRing(data: data, size: 22)
             }
