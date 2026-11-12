@@ -69,6 +69,11 @@ class AttendanceTrackingService {
     }
   }
 
+  /// Marca que ya se ofrecio "Siempre" (p. ej. durante la pantalla de permisos).
+  Future<void> markAlwaysOffered() => _store.markAlwaysOffered();
+
+  Future<bool> wasAlwaysOffered() => _store.wasAlwaysOffered();
+
   /// Cierre de sesion: nunca se sigue rastreando a un usuario que salio.
   Future<void> onSignedOut() => _location.stop();
 

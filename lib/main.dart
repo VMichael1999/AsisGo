@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'app/main_navigation_shell.dart';
+import 'features/permissions/permissions_onboarding.dart';
 import 'core/contracts/i_security_service.dart';
 import 'core/security/security_service.dart';
 import 'core/services/connectivity_service.dart';
@@ -50,12 +51,6 @@ void main() async {
 
   // Inicializacion de repositorios de datos
   final authRepository = AuthRepository(storageService);
-  if (storageService.getUserSession() == null) {
-    await authRepository.loginWithCredentials(
-      email: 'carlos.mendoza@asisgo.com',
-      password: 'demo',
-    );
-  }
   final branchRepository = BranchRepository(locationService);
   final attendanceRepository = AttendanceRepository(storageService);
   await attendanceRepository.init();
@@ -196,7 +191,7 @@ class AsisGoApp extends StatelessWidget {
           home: BlocBuilder<AuthCubit, AuthState>(
             builder: (context, state) {
               if (state is Authenticated || state is AuthSessionExpired) {
-                return const MainNavigationShell();
+                return const PermissionsGate(child: MainNavigationShell());
               }
               if (state is AuthLoading) {
                 return Scaffold(
