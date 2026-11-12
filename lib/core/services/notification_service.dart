@@ -124,6 +124,7 @@ class NotificationService {
     DateTime? lunchStartTime,
     bool isInsideGeozone = true,
     int? punchesCount,
+    DateTime? lastPunchTime,
   }) async {
     if (!_isInitialized) return;
 
@@ -133,6 +134,14 @@ class NotificationService {
         phase == ShiftPhase.completed ||
         !isLiveTrackingEnabled) {
       await cancelShiftNotification();
+      // Al marcar la salida, la isla muestra "Salida registrada" un momento
+      if (phase == ShiftPhase.completed && isLiveTrackingEnabled) {
+        await LiveActivityService().syncShift(
+          phase: phase,
+          branchName: branchName,
+          lastPunchTime: lastPunchTime,
+        );
+      }
       return;
     }
 
@@ -292,6 +301,7 @@ class NotificationService {
         branchName: branchName,
         shiftStartTime: shiftStartTime,
         lunchStartTime: lunchStartTime,
+        lastPunchTime: lastPunchTime,
         isInsideGeozone: isInsideGeozone,
       );
     }

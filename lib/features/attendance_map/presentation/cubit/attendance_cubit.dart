@@ -227,6 +227,7 @@ class AttendanceCubit extends Cubit<AttendanceState> {
       lunchStartTime: lunchStart?.timestamp,
       isInsideGeozone: _lastReportedInsideGeozone,
       punchesCount: records.length,
+      lastPunchTime: records.isNotEmpty ? records.last.timestamp : null,
     );
   }
 

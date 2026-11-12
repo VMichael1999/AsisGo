@@ -1,0 +1,4 @@
+// Takes the app version (Flutter) so the extension matches.
+#include? "../Flutter/Generated.xcconfig"
+MARKETING_VERSION = $(FLUTTER_BUILD_NAME)
+CURRENT_PROJECT_VERSION = $(FLUTTER_BUILD_NUMBER)

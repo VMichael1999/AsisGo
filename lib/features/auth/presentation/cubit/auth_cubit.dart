@@ -17,7 +17,9 @@ class AuthCubit extends Cubit<AuthState> {
       final user = await _authRepository.getCurrentUser();
       if (user != null) {
         _startSessionTimer();
-        emit(Authenticated(user));
+        LiveActivityService().setCollaborator(user.fullName);
+        LiveActivityService().setCollaborator(user.fullName);
+      emit(Authenticated(user));
       } else {
         await LiveActivityService().endShiftActivity();
         emit(const Unauthenticated());
@@ -36,6 +38,7 @@ class AuthCubit extends Cubit<AuthState> {
         password: password,
       );
       _startSessionTimer();
+      LiveActivityService().setCollaborator(user.fullName);
       emit(Authenticated(user));
     } catch (e) {
       emit(AuthError('Error al iniciar sesión: ${e.toString()}'));
@@ -47,6 +50,7 @@ class AuthCubit extends Cubit<AuthState> {
     try {
       final user = await _authRepository.loginWithBiometrics();
       _startSessionTimer();
+      LiveActivityService().setCollaborator(user.fullName);
       emit(Authenticated(user));
     } catch (e) {
       emit(const AuthError('No se pudo validar la biometría. Intente con contraseña.'));
