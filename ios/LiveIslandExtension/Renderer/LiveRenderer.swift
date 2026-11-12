@@ -160,7 +160,7 @@ enum LiveRenderer {
             } else { view = Text("") }
         case "stopwatch":
             view = date.map { Text($0, style: .timer) } ?? Text("")
-            placeholder = "00:00"
+            placeholder = "0:00:00"
         case "relative":
             view = date.map { Text($0, style: .relative) } ?? Text("")
         default:
