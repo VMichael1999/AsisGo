@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show Color;
 import 'package:intl/intl.dart';
@@ -19,6 +21,7 @@ class LiveActivityService {
   /// Tras la salida la tarjeta queda visible este tiempo antes de retirarse.
   static const Duration _exitVisibleFor = Duration(minutes: 10);
 
+  Timer? _exitTimer;
   String _initials = 'A';
 
   bool get _isIOS => defaultTargetPlatform == TargetPlatform.iOS;
@@ -62,15 +65,20 @@ class LiveActivityService {
     );
 
     try {
-      final activity = await LiveIsland.start(
+      await LiveIsland.start(
         customId: _activityId,
         layout: shiftLayout,
         state: state,
         relevance: 100,
       );
+      _exitTimer?.cancel();
       if (phase == ShiftPhase.completed) {
-        // Muestra "Salida registrada" y la retira pasado un tiempo
-        await activity.end(dismiss: const LiveDismiss.after(_exitVisibleFor));
+        // Iniciar el fin de la actividad la saca de la isla al instante, asi que
+        // se mantiene viva y se retira pasado el tiempo.
+        final elapsed = DateTime.now().difference(
+          lastPunchTime ?? DateTime.now(),
+        );
+        _exitTimer = Timer(_exitVisibleFor - elapsed, endShiftActivity);
       }
     } catch (e) {
       debugPrint('[LiveActivityService] No se pudo actualizar la isla: $e');
@@ -79,6 +87,7 @@ class LiveActivityService {
 
   /// Retira la actividad del turno de inmediato.
   Future<void> endShiftActivity() async {
+    _exitTimer?.cancel();
     if (!_isIOS) return;
     try {
       await LiveIsland.endAll();
@@ -160,6 +169,13 @@ class LiveActivityService {
   static LiveNode _compactLabel(LiveNode icon, String text) =>
       LiveRow([icon, LiveText.literal(text, size: 13, weight: 600)], gap: 4);
 
+  static LiveNode _detailRow(LiveNode icon, LiveNode value, {String? label}) =>
+      LiveRow([
+        icon,
+        if (label != null) LiveText.literal(label, size: 13, muted: true),
+        value,
+      ], gap: 6);
+
   static final LiveLayout shiftLayout = LiveLayout(
     theme: const LiveTheme(accent: Color(0xFF4A6CD4)),
     // Isla compacta: avatar a la izquierda, estado a la derecha
@@ -179,72 +195,67 @@ class LiveActivityService {
       finRefrigerio: _forkIcon,
       salida: _exitIcon,
     ),
-    // Isla expandida y pantalla de bloqueo
+    // Isla expandida y pantalla de bloqueo: avatar a la izquierda y, a su lado,
+    // titulo, hora y detalle alineados a la izquierda.
     expanded: LiveExpanded(
-      leading: LiveAvatar.bound(bind('iniciales'), size: 52),
-      center: LiveColumn([
-        LiveRow([
-          _byPhase(
-            entrada: const LiveIcon.symbol(
-              'checkmark.circle.fill',
-              color: _green,
-            ),
-            refrigerio: _forkIcon,
-            finRefrigerio: _forkIcon,
-            salida: _exitIcon,
-          ),
-          LiveText(bind('titulo'), size: 17, weight: 600, lines: 1),
-        ], gap: 6),
-        LiveText(bind('hora'), size: 15, muted: true),
-      ], gap: 2),
-      bottom: _byPhase(
-        entrada: LiveRow(
+      leading: LiveAvatar.bound(bind('iniciales'), size: 46),
+      center: LiveRow([
+        LiveColumn(
           [
-            const LiveIcon.symbol('calendar', size: 12),
-            LiveText(bind('detalle'), size: 12, muted: true),
-          ],
-          gap: 6,
-          align: LiveAlign.center,
-        ),
-        refrigerio: LiveRow(
-          [
-            const LiveIcon.symbol('clock', size: 12),
-            const LiveText.literal('Duración:', size: 12, muted: true),
-            LiveText.stopwatch(
-              bind('refrigerioDesde'),
-              size: 12,
-              muted: true,
-              tabular: true,
+            LiveRow([
+              _byPhase(
+                entrada: const LiveIcon.symbol(
+                  'checkmark.circle.fill',
+                  size: 20,
+                  color: _green,
+                ),
+                refrigerio: _forkIcon,
+                finRefrigerio: _forkIcon,
+                salida: _exitIcon,
+              ),
+              LiveText(bind('titulo'), size: 18, weight: 700, lines: 1),
+            ], gap: 8),
+            LiveText(bind('hora'), size: 14, muted: true),
+            const LiveSpacer(size: 4),
+            _byPhase(
+              entrada: _detailRow(
+                const LiveIcon.symbol('calendar', size: 13),
+                LiveText(bind('detalle'), size: 13, muted: true),
+              ),
+              refrigerio: _detailRow(
+                const LiveIcon.symbol('clock', size: 13),
+                LiveText.stopwatch(
+                  bind('refrigerioDesde'),
+                  size: 13,
+                  muted: true,
+                  tabular: true,
+                ),
+                label: 'Duración:',
+              ),
+              finRefrigerio: _detailRow(
+                const LiveIcon.symbol(
+                  'checkmark.circle.fill',
+                  size: 13,
+                  color: _teal,
+                ),
+                LiveText(bind('detalle'), size: 13, muted: true),
+              ),
+              salida: _detailRow(
+                const LiveIcon.symbol(
+                  'checkmark.circle.fill',
+                  size: 13,
+                  color: _teal,
+                ),
+                LiveText(bind('detalle'), size: 13, muted: true),
+              ),
             ),
           ],
-          gap: 6,
-          align: LiveAlign.center,
+          gap: 3,
+          align: LiveAlign.start,
         ),
-        finRefrigerio: LiveRow(
-          [
-            const LiveIcon.symbol(
-              'checkmark.circle.fill',
-              size: 12,
-              color: _teal,
-            ),
-            LiveText(bind('detalle'), size: 12, muted: true),
-          ],
-          gap: 6,
-          align: LiveAlign.center,
-        ),
-        salida: LiveRow(
-          [
-            const LiveIcon.symbol(
-              'checkmark.circle.fill',
-              size: 12,
-              color: _teal,
-            ),
-            LiveText(bind('detalle'), size: 12, muted: true),
-          ],
-          gap: 6,
-          align: LiveAlign.center,
-        ),
-      ),
+        // Empuja el texto hacia el avatar en lugar de centrarlo
+        const LiveSpacer(),
+      ], gap: 0),
     ),
     lockScreen: const LiveLockScreen.sameAsExpanded(),
     // Android usa su notificacion propia; este bloque solo completa el diseño
