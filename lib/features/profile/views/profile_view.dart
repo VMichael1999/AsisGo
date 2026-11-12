@@ -1,4 +1,5 @@
 import '../../../core/theme/asis_palette.dart';
+import '../widgets/permissions_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -44,6 +45,8 @@ class _ProfileViewState extends State<ProfileView> {
               _ScheduleCard(user: user),
               const _SectionLabel('Marcaciones'),
               const _SyncCard(),
+              const _SectionLabel('Permisos'),
+              const PermissionsCard(),
               const _SectionLabel('Preferencias'),
               _PreferencesCard(
                 onLiveTrackingChanged: (enabled) {

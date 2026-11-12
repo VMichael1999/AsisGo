@@ -300,6 +300,7 @@ class FakeAttendanceRepository implements AttendanceRepository {
     required double distanceToGeozone,
     required bool isInsideGeozone,
     bool isMockedLocation = false,
+    String? locationPermission,
     String? note,
     String? selfiePath,
     bool isSynced = true,

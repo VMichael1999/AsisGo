@@ -35,13 +35,13 @@
 	<key>NSFaceIDUsageDescription</key>
 	<string>AsisGo utiliza Face ID para iniciar sesión de manera rápida y segura.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>AsisGo requiere acceso continuo a la ubicación para validar en tiempo real si te encuentras dentro o fuera de la geozona asignada durante tu jornada laboral.</string>
+	<string>AsisGo registra tu ubicación durante tu jornada laboral, también con la app en segundo plano, para validar tu presencia en la sede. Se detiene al marcar tu salida.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>AsisGo requiere acceso a la ubicación en segundo plano para actualizar el estado de geozona en la Isla Dinámica de tu turno de trabajo.</string>
+	<string>AsisGo registra tu ubicación durante tu jornada laboral, también con la app en segundo plano, para validar tu presencia en la sede. Se detiene al marcar tu salida.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>AsisGo requiere acceso a tu ubicación para validar la presencia dentro de la geozona de la empresa al registrar asistencia.</string>
+	<string>AsisGo usa tu ubicación para validar que estás dentro de la sede asignada al registrar tu asistencia.</string>
 	<key>NSMotionUsageDescription</key>
-	<string>AsisGo optimiza el seguimiento de geozona para la marcación y validación de asistencia.</string>
+	<string>AsisGo consulta tu actividad física para saber si estás en movimiento y cuidar la batería durante tu jornada.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>AsisGo requiere acceso a la galería para adjuntar comprobantes o fotografías de asistencia.</string>
 	<key>NSSupportsLiveActivities</key>
@@ -74,7 +74,6 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>
-		<string>fetch</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>

@@ -2,6 +2,7 @@ import 'core/theme/asis_palette.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'app/main_navigation_shell.dart';
 import 'core/contracts/i_security_service.dart';
 import 'core/security/security_service.dart';
@@ -10,6 +11,10 @@ import 'core/services/haptic_feedback_service.dart';
 import 'core/services/location_service.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/offline_sync_service.dart';
+import 'core/services/permission_service.dart';
+import 'core/tracking/attendance_tracking_service.dart';
+import 'core/tracking/background_location_service.dart';
+import 'core/tracking/tracked_location.dart';
 import 'core/services/storage_service.dart';
 import 'core/theme/app_theme.dart';
 import 'features/attendance_map/data/attendance_repository.dart';
@@ -65,6 +70,22 @@ void main() async {
 
   final hapticFeedbackService = HapticFeedbackService(storageService);
 
+  // Permisos y seguimiento GPS de la jornada (solo con la jornada en curso)
+  final permissionService = PermissionService();
+  final pointStore = PrefsLocationPointStore(
+    await SharedPreferences.getInstance(),
+  );
+  final backgroundLocation = BackgroundLocationService(
+    permissions: permissionService,
+    store: pointStore,
+    connectivity: connectivityService,
+  );
+  final trackingService = AttendanceTrackingService(
+    location: backgroundLocation,
+    permissions: permissionService,
+    store: pointStore,
+  );
+
   runApp(
     AsisGoApp(
       authRepository: authRepository,
@@ -76,6 +97,8 @@ void main() async {
       connectivityService: connectivityService,
       offlineSyncService: offlineSyncService,
       hapticFeedbackService: hapticFeedbackService,
+      permissionService: permissionService,
+      trackingService: trackingService,
     ),
   );
 }
@@ -90,6 +113,8 @@ class AsisGoApp extends StatelessWidget {
   final ConnectivityService connectivityService;
   final OfflineSyncService offlineSyncService;
   final HapticFeedbackService hapticFeedbackService;
+  final IPermissionService permissionService;
+  final AttendanceTrackingService trackingService;
 
   const AsisGoApp({
     super.key,
@@ -102,6 +127,8 @@ class AsisGoApp extends StatelessWidget {
     required this.connectivityService,
     required this.offlineSyncService,
     required this.hapticFeedbackService,
+    required this.permissionService,
+    required this.trackingService,
   });
 
   @override
@@ -117,11 +144,16 @@ class AsisGoApp extends StatelessWidget {
         RepositoryProvider.value(value: connectivityService),
         RepositoryProvider.value(value: offlineSyncService),
         RepositoryProvider.value(value: hapticFeedbackService),
+        RepositoryProvider<IPermissionService>.value(value: permissionService),
+        RepositoryProvider.value(value: trackingService),
       ],
       child: MultiBlocProvider(
         providers: [
           BlocProvider<AuthCubit>(
-            create: (ctx) => AuthCubit(authRepository)..checkAuthStatus(),
+            create:
+                (ctx) =>
+                    AuthCubit(authRepository, trackingService: trackingService)
+                      ..checkAuthStatus(),
           ),
           BlocProvider<LocationCubit>(
             create:
@@ -138,6 +170,7 @@ class AsisGoApp extends StatelessWidget {
                   connectivityService: connectivityService,
                   offlineSyncService: offlineSyncService,
                   hapticFeedbackService: hapticFeedbackService,
+                  trackingService: trackingService,
                 ),
           ),
           BlocProvider<CalendarCubit>(
