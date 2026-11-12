@@ -134,14 +134,6 @@ class NotificationService {
         phase == ShiftPhase.completed ||
         !isLiveTrackingEnabled) {
       await cancelShiftNotification();
-      // Al marcar la salida, la isla muestra "Salida registrada" un momento
-      if (phase == ShiftPhase.completed && isLiveTrackingEnabled) {
-        await LiveActivityService().syncShift(
-          phase: phase,
-          branchName: branchName,
-          lastPunchTime: lastPunchTime,
-        );
-      }
       return;
     }
 

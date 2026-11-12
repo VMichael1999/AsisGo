@@ -9,7 +9,7 @@ void main() {
     'fase': fase,
     'titulo': titulo,
     'detalle': detalle,
-    'hora': 'Hoy, 9:41 a. m.',
+    'hora': '9:41 a. m.',
     'iniciales': 'CM',
     'refrigerioDesde': now,
   };
@@ -22,7 +22,6 @@ void main() {
       'Refrigerio finalizado',
       'Regreso a labores',
     ),
-    'salida': stateFor('salida', 'Salida registrada', 'Jornada finalizada'),
   };
 
   for (final entry in states.entries) {
