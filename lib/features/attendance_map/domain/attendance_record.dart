@@ -15,6 +15,9 @@ class AttendanceRecord extends Equatable {
   final double distanceToGeozone;
   final bool isInsideGeozone;
   final bool isMockedLocation;
+
+  /// Estado del permiso de ubicacion al marcar (`always`, `whileInUse`...).
+  final String? locationPermission;
   final String? note;
   final String? selfiePath;
   final bool isSynced;
@@ -33,6 +36,7 @@ class AttendanceRecord extends Equatable {
     required this.distanceToGeozone,
     required this.isInsideGeozone,
     this.isMockedLocation = false,
+    this.locationPermission,
     this.note,
     this.selfiePath,
     this.isSynced = true,
@@ -52,6 +56,7 @@ class AttendanceRecord extends Equatable {
     double? distanceToGeozone,
     bool? isInsideGeozone,
     bool? isMockedLocation,
+    String? locationPermission,
     String? note,
     String? selfiePath,
     bool? isSynced,
@@ -70,6 +75,7 @@ class AttendanceRecord extends Equatable {
       distanceToGeozone: distanceToGeozone ?? this.distanceToGeozone,
       isInsideGeozone: isInsideGeozone ?? this.isInsideGeozone,
       isMockedLocation: isMockedLocation ?? this.isMockedLocation,
+      locationPermission: locationPermission ?? this.locationPermission,
       note: note ?? this.note,
       selfiePath: selfiePath ?? this.selfiePath,
       isSynced: isSynced ?? this.isSynced,
@@ -91,6 +97,7 @@ class AttendanceRecord extends Equatable {
       'distanceToGeozone': distanceToGeozone,
       'isInsideGeozone': isInsideGeozone,
       'isMockedLocation': isMockedLocation,
+      'locationPermission': locationPermission,
       'note': note,
       'selfiePath': selfiePath,
       'isSynced': isSynced,
@@ -112,6 +119,7 @@ class AttendanceRecord extends Equatable {
       distanceToGeozone: (json['distanceToGeozone'] as num).toDouble(),
       isInsideGeozone: json['isInsideGeozone'] as bool,
       isMockedLocation: json['isMockedLocation'] as bool? ?? false,
+      locationPermission: json['locationPermission'] as String?,
       note: json['note'] as String?,
       selfiePath: json['selfiePath'] as String?,
       isSynced: json['isSynced'] as bool? ?? true,
@@ -133,6 +141,7 @@ class AttendanceRecord extends Equatable {
         distanceToGeozone,
         isInsideGeozone,
         isMockedLocation,
+        locationPermission,
         note,
         selfiePath,
         isSynced,

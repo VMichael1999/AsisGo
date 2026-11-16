@@ -1,5 +1,5 @@
+import '../../core/theme/asis_palette.dart';
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart';
 import 'asis_shimmer.dart';
 
 /// Esqueleto estructurado para la pantalla de inicio de sesion (Login).
@@ -18,11 +18,7 @@ class AsisLoginSkeleton extends StatelessWidget {
             children: [
               // Logotipo corporativo
               const Center(
-                child: AsisSkeletonBox(
-                  width: 76,
-                  height: 76,
-                  borderRadius: 22,
-                ),
+                child: AsisSkeletonBox(width: 76, height: 76, borderRadius: 22),
               ),
               const SizedBox(height: 20),
 
@@ -95,14 +91,16 @@ class AsisBranchesSkeleton extends StatelessWidget {
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? const Color(0xFF131926)
-                  : Colors.white,
+              color:
+                  Theme.of(context).brightness == Brightness.dark
+                      ? const Color(0xFF131926)
+                      : Colors.white,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? const Color(0x334A628A)
-                    : const Color(0x1F000000),
+                color:
+                    Theme.of(context).brightness == Brightness.dark
+                        ? const Color(0x334A628A)
+                        : const Color(0x1F000000),
               ),
             ),
             child: const Row(
@@ -166,7 +164,11 @@ class AsisCalendarSkeleton extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 for (int col = 0; col < 7; col++)
-                  const AsisSkeletonBox(width: 36, height: 36, borderRadius: 18),
+                  const AsisSkeletonBox(
+                    width: 36,
+                    height: 36,
+                    borderRadius: 18,
+                  ),
               ],
             ),
           ),
@@ -199,14 +201,16 @@ class AsisProfileSkeleton extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? const Color(0xFF131926)
-                : Colors.white,
+            color:
+                Theme.of(context).brightness == Brightness.dark
+                    ? const Color(0xFF131926)
+                    : Colors.white,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? const Color(0x334A628A)
-                  : const Color(0x1F000000),
+              color:
+                  Theme.of(context).brightness == Brightness.dark
+                      ? const Color(0x334A628A)
+                      : const Color(0x1F000000),
             ),
           ),
           child: const Column(
@@ -244,7 +248,6 @@ class AsisMapSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Stack(
       children: [
@@ -258,11 +261,9 @@ class AsisMapSkeleton extends StatelessWidget {
               height: 68,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF141D2B) : Colors.white,
+                color: context.palette.surface,
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: isDark ? const Color(0x444A628A) : AppColors.borderLight,
-                ),
+                border: Border.all(color: context.palette.border),
               ),
               child: const Row(
                 children: [
@@ -298,7 +299,7 @@ class AsisMapSkeleton extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: AppColors.accent.withValues(alpha: 0.22),
+                    color: context.palette.primary.withValues(alpha: 0.22),
                     width: 1.5,
                   ),
                 ),
@@ -309,7 +310,7 @@ class AsisMapSkeleton extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: AppColors.accent.withValues(alpha: 0.35),
+                    color: context.palette.primary.withValues(alpha: 0.35),
                     width: 1.5,
                   ),
                 ),
@@ -320,10 +321,10 @@ class AsisMapSkeleton extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: AppColors.accent.withValues(alpha: 0.5),
+                    color: context.palette.primary.withValues(alpha: 0.5),
                     width: 2.0,
                   ),
-                  color: AppColors.accent.withValues(alpha: 0.08),
+                  color: context.palette.primary.withValues(alpha: 0.08),
                 ),
               ),
               const AsisSkeletonCircle(size: 20),
@@ -355,11 +356,9 @@ class AsisMapSkeleton extends StatelessWidget {
               height: 200,
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF141D2B) : Colors.white,
+                color: context.palette.surface,
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: isDark ? const Color(0x444A628A) : AppColors.borderLight,
-                ),
+                border: Border.all(color: context.palette.border),
               ),
               child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -382,9 +381,7 @@ class AsisMapSkeleton extends StatelessWidget {
                   Spacer(),
                   AsisSkeletonBox(height: 52, borderRadius: 14),
                   SizedBox(height: 10),
-                  Center(
-                    child: AsisSkeletonLine(width: 180, height: 12),
-                  ),
+                  Center(child: AsisSkeletonLine(width: 180, height: 12)),
                 ],
               ),
             ),
@@ -402,10 +399,10 @@ class AsisBottomNavSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF0D131F),
+      decoration: BoxDecoration(
+        color: context.palette.surface,
         border: Border(
-          top: BorderSide(color: Color(0x22FFFFFF), width: 0.8),
+          top: BorderSide(color: context.palette.border, width: 0.8),
         ),
       ),
       child: SafeArea(

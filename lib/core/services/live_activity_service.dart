@@ -1,130 +1,281 @@
 import 'package:flutter/foundation.dart';
-import 'package:live_activities/live_activities.dart';
+import 'package:flutter/material.dart' show Color;
+import 'package:intl/intl.dart';
+import 'package:live_island_kit/live_island_kit.dart';
 import '../../features/attendance_map/domain/shift_phase.dart';
+import '../constants/app_constants.dart';
 
-/// Servicio nativo para gestionar Live Activities y Dynamic Island en iOS (ActivityKit / WidgetKit)
+/// Dynamic Island y pantalla de bloqueo de la jornada (iOS), con live_island_kit.
+///
+/// Muestra un contador de la jornada en curso ("En jornada") y, durante el
+/// refrigerio, un contador de la pausa. Al marcar la salida la actividad se
+/// retira. Los contadores los actualiza iOS por su cuenta, sin depender de
+/// que la app este abierta. Android sigue usando su notificacion propia.
 class LiveActivityService {
   static final LiveActivityService _instance = LiveActivityService._internal();
   factory LiveActivityService() => _instance;
   LiveActivityService._internal();
 
-  final LiveActivities _liveActivities = LiveActivities();
-  bool _isInitialized = false;
-  bool _isSupported = false;
-  String? _currentActivityId;
-  String? get currentActivityId => _currentActivityId;
+  /// Id propio: si ya hay una actividad viva, `start` la actualiza.
+  static const String _activityId = 'asisgo-turno';
 
-  static const String appGroupId = 'group.com.asisgo.app.asisgo';
-  static const String shiftActivityKey = 'asisgo_shift_tracker';
+  String _shiftStart = AppConstants.standardShiftStart;
+  String _shiftEnd = AppConstants.standardShiftEnd;
 
-  /// Inicializa la conexión con ActivityKit
-  Future<void> initialize() async {
-    if (_isInitialized) return;
+  bool get _isIOS => defaultTargetPlatform == TargetPlatform.iOS;
 
-    if (defaultTargetPlatform != TargetPlatform.iOS) {
-      debugPrint('[LiveActivityService] Live Activities solo está disponible en iOS.');
-      return;
-    }
+  /// Se mantiene por compatibilidad con la inicializacion de notificaciones.
+  Future<void> initialize() async {}
 
-    try {
-      _isSupported = await _liveActivities.areActivitiesSupported();
-      if (!_isSupported) {
-        debugPrint('[LiveActivityService] Live Activities no soportado en este dispositivo/SO.');
-        return;
-      }
-
-      await _liveActivities.init(appGroupId: appGroupId);
-      _isInitialized = true;
-      debugPrint('[LiveActivityService] Conexión nativa ActivityKit inicializada con éxito.');
-    } catch (e) {
-      debugPrint('[LiveActivityService] Error al inicializar ActivityKit: $e');
-    }
+  /// Horario asignado al colaborador ("08:30", "18:00").
+  void setSchedule({
+    required String shiftStartTime,
+    required String shiftEndTime,
+  }) {
+    _shiftStart = shiftStartTime;
+    _shiftEnd = shiftEndTime;
   }
 
-  DateTime? _lastKnownShiftStartTime;
-
-  /// Sincroniza el estado del turno con la Dynamic Island y la pantalla de bloqueo nativa
+  /// Sincroniza la isla con la fase del turno.
   Future<void> syncShift({
     required ShiftPhase phase,
     required String branchName,
     DateTime? shiftStartTime,
     DateTime? lunchStartTime,
+    DateTime? lastPunchTime,
     bool isInsideGeozone = true,
   }) async {
-    if (defaultTargetPlatform != TargetPlatform.iOS) return;
-    if (!_isInitialized) {
-      await initialize();
-      if (!_isInitialized) return;
-    }
-
-    // Si la jornada terminó o no ha iniciado, finalizamos la actividad en Dynamic Island
+    if (!_isIOS) return;
+    // Sin jornada en curso (no iniciada o ya terminada) no se muestra nada
     if (phase == ShiftPhase.notStarted || phase == ShiftPhase.completed) {
-      _lastKnownShiftStartTime = null;
       await endShiftActivity();
       return;
     }
 
-    if (shiftStartTime != null) {
-      _lastKnownShiftStartTime = shiftStartTime;
-    }
+    final now = DateTime.now();
+    final checkIn = shiftStartTime ?? lastPunchTime ?? now;
+    final end = _todayAt(_shiftEnd, now);
+    final fmt = DateFormat('h:mm a', 'es');
+    final scheduleStart = _todayAt(_shiftStart, now);
 
-    final bool isBreak = phase == ShiftPhase.onLunch;
-    final String title = isBreak ? 'Refrigerio en Curso' : 'Jornada Activa';
-    
-    // Medir cronómetro continuo desde la hora de entrada original del turno
-    final DateTime effectiveStartTime =
-        (shiftStartTime ?? _lastKnownShiftStartTime) ?? DateTime.now();
-    _lastKnownShiftStartTime ??= effectiveStartTime;
-
-    final data = <String, dynamic>{
-      'title': title,
-      'subtitle': branchName,
-      'companyName': _extractCompanyName(branchName),
-      'checkInTimeStr': _formatTime(effectiveStartTime),
-      'isBreak': isBreak,
-      'isInsideGeozone': isInsideGeozone,
-      'checkInEpoch': effectiveStartTime.millisecondsSinceEpoch.toDouble(),
+    final state = <String, Object?>{
+      'fase': phase == ShiftPhase.onLunch ? 'refrigerio' : 'jornada',
+      'titulo': phase == ShiftPhase.onLunch ? 'En refrigerio' : 'En jornada',
+      'horario': '${fmt.format(scheduleStart)} – ${fmt.format(end)}',
+      'entradaTxt': fmt.format(checkIn),
+      'salidaTxt': fmt.format(end),
+      'entradaTs': checkIn,
+      'finTs': end,
+      'refrigerioDesde': lunchStartTime ?? lastPunchTime ?? now,
     };
 
     try {
-      await _liveActivities.endAllActivities();
-      await Future.delayed(const Duration(milliseconds: 100));
-      await _liveActivities.createActivity(
-        shiftActivityKey,
-        data,
-        removeWhenAppIsKilled: false,
+      await LiveIsland.start(
+        customId: _activityId,
+        layout: shiftLayout,
+        state: state,
+        relevance: 100,
       );
-      _currentActivityId = shiftActivityKey;
-      debugPrint(
-          '[LiveActivityService] Dynamic Island actualizada: $title ($branchName) | Geozona: ${isInsideGeozone ? "DENTRO" : "FUERA"}');
     } catch (e) {
-      debugPrint('[LiveActivityService] Error al sincronizar Live Activity nativa: $e');
+      debugPrint('[LiveActivityService] No se pudo actualizar la isla: $e');
     }
   }
 
-  /// Finaliza la Live Activity en curso en la Dynamic Island
+  /// Retira la actividad del turno de inmediato.
   Future<void> endShiftActivity() async {
-    _lastKnownShiftStartTime = null;
-    if (defaultTargetPlatform != TargetPlatform.iOS) return;
+    if (!_isIOS) return;
     try {
-      await _liveActivities.endAllActivities();
-      _currentActivityId = null;
-      debugPrint('[LiveActivityService] Live Activity finalizada de Dynamic Island.');
+      await LiveIsland.endAll();
     } catch (e) {
-      debugPrint('[LiveActivityService] Error al finalizar Live Activity: $e');
+      debugPrint('[LiveActivityService] No se pudo finalizar la isla: $e');
     }
   }
 
-  String _extractCompanyName(String full) {
-    if (full.isEmpty) return 'AsisGo';
-    final words = full.split(' ');
-    if (words.length >= 2) return '${words[0]} ${words[1]}';
-    return words[0];
+  static DateTime _todayAt(String hhmm, DateTime now) {
+    final parts = hhmm.split(':');
+    final h = int.tryParse(parts.first) ?? 0;
+    final m = parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0;
+    return DateTime(now.year, now.month, now.day, h, m);
   }
 
-  String _formatTime(DateTime dt) {
-    final h = dt.hour.toString().padLeft(2, '0');
-    final m = dt.minute.toString().padLeft(2, '0');
-    return '$h:$m';
-  }
+  // ---------------------------------------------------------------------------
+  // Diseño (viaja una vez al iniciar; cada cambio solo envia el estado)
+  // ---------------------------------------------------------------------------
+
+  static const _green = Color(0xFF4ADE80);
+  static const _orange = Color(0xFFFF9F0A);
+
+  /// Elige un nodo segun estemos en jornada o en refrigerio.
+  static LiveNode _byPhase({
+    required LiveNode jornada,
+    required LiveNode refrigerio,
+  }) => LiveIf(
+    bind('fase').equals('refrigerio'),
+    then: refrigerio,
+    otherwise: jornada,
+  );
+
+  static const _briefcase = LiveIcon.symbol(
+    'briefcase.fill',
+    size: 18,
+    color: _green,
+  );
+  static const _fork = LiveIcon.symbol('fork.knife', size: 18, color: _orange);
+
+  /// Circulo con el icono de la fase (en lugar del anillo, que no se puede
+  /// avanzar solo con la app en segundo plano).
+  static LiveNode _badge({required double size}) => _byPhase(
+    jornada: LiveBox(
+      size: size,
+      radius: size / 2,
+      color: const Color(0x2E4ADE80),
+      border: _green,
+      borderWidth: 2.5,
+      child: _briefcase,
+    ),
+    refrigerio: LiveBox(
+      size: size,
+      radius: size / 2,
+      color: const Color(0x2EFF9F0A),
+      border: _orange,
+      borderWidth: 2.5,
+      child: _fork,
+    ),
+  );
+
+  /// Contador de la fase: tiempo de jornada o tiempo de refrigerio.
+  static LiveNode _timer({required double size, bool white = false}) =>
+      _byPhase(
+        jornada: LiveText.stopwatch(
+          bind('entradaTs'),
+          size: size,
+          weight: 700,
+          tabular: true,
+          color: white ? const Color(0xFFFFFFFF) : _green,
+        ),
+        refrigerio: LiveText.stopwatch(
+          bind('refrigerioDesde'),
+          size: size,
+          weight: 700,
+          tabular: true,
+          color: white ? const Color(0xFFFFFFFF) : _orange,
+        ),
+      );
+
+  static LiveNode _stat(String label, LiveNode value) => LiveColumn(
+    [LiveText.literal(label, size: 12, muted: true), value],
+    gap: 2,
+    align: LiveAlign.center,
+  );
+
+  static final LiveLayout shiftLayout = LiveLayout(
+    theme: const LiveTheme(accent: _green),
+    // Isla compacta: icono a la izquierda y contador a la derecha
+    compactLeading: _byPhase(
+      jornada: const LiveIcon.symbol(
+        'checkmark.circle',
+        size: 18,
+        color: _green,
+      ),
+      refrigerio: _fork,
+    ),
+    compactTrailing: _timer(size: 14),
+    minimal: _byPhase(
+      jornada: const LiveIcon.symbol('briefcase.fill', color: _green),
+      refrigerio: _fork,
+    ),
+    // Isla expandida: icono | titulo y horario | contador
+    expanded: LiveExpanded(
+      center: LiveRow(
+        [
+          _badge(size: 46),
+          LiveColumn(
+            [
+              LiveText(bind('titulo'), size: 17, weight: 700, lines: 1),
+              LiveText(bind('horario'), size: 13, muted: true, lines: 1),
+            ],
+            gap: 2,
+            align: LiveAlign.start,
+          ),
+          const LiveSpacer(),
+          _timer(size: 26),
+        ],
+        gap: 12,
+        align: LiveAlign.center,
+      ),
+    ),
+    // Pantalla de bloqueo: contador grande y resumen Entrada / Faltan / Salida
+    lockScreen: LiveLockScreen.custom(
+      LiveColumn(
+        [
+          LiveRow([
+            _badge(size: 52),
+            LiveColumn(
+              [
+                LiveRow([
+                  _byPhase(
+                    jornada: const LiveIcon.symbol(
+                      'circle.fill',
+                      size: 7,
+                      color: _green,
+                    ),
+                    refrigerio: const LiveIcon.symbol(
+                      'circle.fill',
+                      size: 7,
+                      color: _orange,
+                    ),
+                  ),
+                  _byPhase(
+                    jornada: const LiveText.literal(
+                      'En jornada',
+                      size: 13,
+                      weight: 600,
+                      color: _green,
+                    ),
+                    refrigerio: const LiveText.literal(
+                      'En refrigerio',
+                      size: 13,
+                      weight: 600,
+                      color: _orange,
+                    ),
+                  ),
+                ], gap: 5),
+                _timer(size: 34, white: true),
+              ],
+              gap: 0,
+              align: LiveAlign.start,
+            ),
+            const LiveSpacer(),
+            const LiveText.literal('AsisGo', size: 12, muted: true),
+          ], gap: 12),
+          const LiveSpacer(size: 10),
+          LiveRow([
+            _stat(
+              'Entrada',
+              LiveText(bind('entradaTxt'), size: 15, weight: 700),
+            ),
+            const LiveSpacer(),
+            _stat(
+              'Faltan',
+              LiveText.countdown(
+                bind('finTs'),
+                size: 15,
+                weight: 700,
+                tabular: true,
+              ),
+            ),
+            const LiveSpacer(),
+            _stat('Salida', LiveText(bind('salidaTxt'), size: 15, weight: 700)),
+          ]),
+        ],
+        gap: 0,
+        align: LiveAlign.start,
+      ),
+    ),
+    // Android usa su notificacion propia; este bloque solo completa el diseño
+    android: LiveAndroid(
+      title: bind('titulo'),
+      text: const LiveText.format('{horario}'),
+    ),
+  );
 }

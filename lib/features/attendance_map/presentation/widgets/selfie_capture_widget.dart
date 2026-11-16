@@ -1,8 +1,8 @@
+import '../../../../core/theme/asis_palette.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../../../core/constants/app_colors.dart';
 
 class SelfieCaptureWidget extends StatefulWidget {
   final Function(String? imagePath) onImageCaptured;
@@ -47,7 +47,9 @@ class _SelfieCaptureWidgetState extends State<SelfieCaptureWidget> {
         widget.onImageCaptured(photo.path);
       }
     } catch (e) {
-      debugPrint('Camera not available or permission denied: $e. Using demo selfie.');
+      debugPrint(
+        'Camera not available or permission denied: $e. Using demo selfie.',
+      );
       // Valor de contingencia para simuladores o dispositivos sin camara frontal
       const demoPath = 'DEMO_FACE_VERIFIED';
       setState(() {
@@ -70,20 +72,20 @@ class _SelfieCaptureWidgetState extends State<SelfieCaptureWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     if (_capturedImagePath != null) {
       return Container(
         height: 140,
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+          color: context.palette.surfaceAlt,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.accent, width: 1.5),
+          border: Border.all(color: context.palette.primary, width: 1.5),
         ),
         child: Stack(
           alignment: Alignment.center,
           children: [
-            if (_capturedImagePath != 'DEMO_FACE_VERIFIED' && !kIsWeb && File(_capturedImagePath!).existsSync())
+            if (_capturedImagePath != 'DEMO_FACE_VERIFIED' &&
+                !kIsWeb &&
+                File(_capturedImagePath!).existsSync())
               ClipRRect(
                 borderRadius: BorderRadius.circular(14),
                 child: Image.file(
@@ -101,16 +103,20 @@ class _SelfieCaptureWidgetState extends State<SelfieCaptureWidget> {
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: AppColors.accent.withValues(alpha: 0.2),
+                      color: context.palette.primary.withValues(alpha: 0.2),
                     ),
-                    child: const Icon(Icons.face_rounded, size: 40, color: AppColors.accent),
+                    child: Icon(
+                      Icons.face_rounded,
+                      size: 40,
+                      color: context.palette.primary,
+                    ),
                   ),
                   const SizedBox(height: 6),
-                  const Text(
+                  Text(
                     'Rostro verificado con éxito',
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
-                      color: AppColors.accent,
+                      color: context.palette.primary,
                       fontSize: 13,
                     ),
                   ),
@@ -127,7 +133,11 @@ class _SelfieCaptureWidgetState extends State<SelfieCaptureWidget> {
                     color: Colors.black.withValues(alpha: 0.6),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.close_rounded, size: 16, color: Colors.white),
+                  child: const Icon(
+                    Icons.close_rounded,
+                    size: 16,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
@@ -137,17 +147,25 @@ class _SelfieCaptureWidgetState extends State<SelfieCaptureWidget> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.accent,
+                  color: context.palette.primary,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.check_circle_rounded, size: 14, color: Colors.white),
+                    Icon(
+                      Icons.check_circle_rounded,
+                      size: 14,
+                      color: Colors.white,
+                    ),
                     SizedBox(width: 4),
                     Text(
                       'Biometría OK',
-                      style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
@@ -164,50 +182,51 @@ class _SelfieCaptureWidgetState extends State<SelfieCaptureWidget> {
       child: Container(
         height: 110,
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+          color: context.palette.background,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isDark ? const Color(0x33FFFFFF) : AppColors.borderLight,
+            color: context.palette.border,
             width: 1.5,
             strokeAlign: BorderSide.strokeAlignInside,
           ),
         ),
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: AppColors.accent.withValues(alpha: 0.12),
-                      shape: BoxShape.circle,
+        child:
+            _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: context.palette.primary.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.camera_alt_rounded,
+                        color: context.palette.primary,
+                        size: 24,
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.camera_alt_rounded,
-                      color: AppColors.accent,
-                      size: 24,
+                    const SizedBox(height: 8),
+                    Text(
+                      'Tomar selfie de validación facial',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                        color: context.palette.textPrimary,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Tomar selfie de validación facial',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
-                      color: isDark ? Colors.white : AppColors.textPrimary,
+                    const SizedBox(height: 2),
+                    Text(
+                      'Opcional o requerido según política corporativa',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: context.palette.textMuted,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Opcional o requerido según política corporativa',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: isDark ? AppColors.textMuted : AppColors.textMuted,
-                    ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
       ),
     );
   }

@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -22,8 +24,57 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>GMSApiKey</key>
+	<string>$(EXPO_PUBLIC_GOOGLE_MAPS_API_KEY)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>LiveIslandAppGroup</key>
+	<string>group.com.asisgo.app.asisgo</string>
+	<key>NSCameraUsageDescription</key>
+	<string>AsisGo requiere acceso a la cámara para tomar una foto de validación facial al marcar tu asistencia.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>AsisGo utiliza Face ID para iniciar sesión de manera rápida y segura.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>AsisGo registra tu ubicación durante tu jornada laboral, también con la app en segundo plano, para validar tu presencia en la sede. Se detiene al marcar tu salida.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>AsisGo registra tu ubicación durante tu jornada laboral, también con la app en segundo plano, para validar tu presencia en la sede. Se detiene al marcar tu salida.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>AsisGo usa tu ubicación para validar que estás dentro de la sede asignada al registrar tu asistencia.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>AsisGo consulta tu actividad física para saber si estás en movimiento y cuidar la batería durante tu jornada.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>AsisGo requiere acceso a la galería para adjuntar comprobantes o fotografías de asistencia.</string>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
+	<key>NSSupportsLiveActivitiesFrequentUpdates</key>
+	<true/>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneClassName</key>
+					<string>UIWindowScene</string>
+					<key>UISceneConfigurationName</key>
+					<string>flutter</string>
+					<key>UISceneDelegateClassName</key>
+					<string>FlutterSceneDelegate</string>
+					<key>UISceneStoryboardFile</key>
+					<string>Main</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -41,32 +92,5 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>AsisGo requiere acceso a tu ubicación para validar la presencia dentro de la geozona de la empresa al registrar asistencia.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>AsisGo requiere acceso continuo a la ubicación para validar en tiempo real si te encuentras dentro o fuera de la geozona asignada durante tu jornada laboral.</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>AsisGo requiere acceso a la ubicación en segundo plano para actualizar el estado de geozona en la Isla Dinámica de tu turno de trabajo.</string>
-	<key>NSMotionUsageDescription</key>
-	<string>AsisGo optimiza el seguimiento de geozona para la marcación y validación de asistencia.</string>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>location</string>
-		<string>fetch</string>
-	</array>
-	<key>NSCameraUsageDescription</key>
-	<string>AsisGo requiere acceso a la cámara para tomar una foto de validación facial al marcar tu asistencia.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>AsisGo requiere acceso a la galería para adjuntar comprobantes o fotografías de asistencia.</string>
-	<key>NSFaceIDUsageDescription</key>
-	<string>AsisGo utiliza Face ID para iniciar sesión de manera rápida y segura.</string>
-	<key>NSSupportsLiveActivities</key>
-	<true/>
-	<key>NSSupportsLiveActivitiesFrequentUpdates</key>
-	<true/>
 </dict>
 </plist>

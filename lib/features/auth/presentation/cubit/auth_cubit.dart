@@ -2,14 +2,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/security/session_timer_manager.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../../../core/services/live_activity_service.dart';
+import '../../../../core/tracking/attendance_tracking_service.dart';
 import '../../data/auth_repository.dart';
 import 'auth_state.dart';
 
 class AuthCubit extends Cubit<AuthState> {
   final AuthRepository _authRepository;
   final SessionTimerManager _sessionTimer = SessionTimerManager();
+  final AttendanceTrackingService? _trackingService;
 
-  AuthCubit(this._authRepository) : super(AuthInitial());
+  AuthCubit(this._authRepository, {AttendanceTrackingService? trackingService})
+    : _trackingService = trackingService,
+      super(AuthInitial());
 
   Future<void> checkAuthStatus() async {
     emit(AuthLoading());
@@ -17,7 +21,11 @@ class AuthCubit extends Cubit<AuthState> {
       final user = await _authRepository.getCurrentUser();
       if (user != null) {
         _startSessionTimer();
-        emit(Authenticated(user));
+        LiveActivityService().setSchedule(
+          shiftStartTime: user.shiftStartTime,
+          shiftEndTime: user.shiftEndTime,
+        );
+      emit(Authenticated(user));
       } else {
         await LiveActivityService().endShiftActivity();
         emit(const Unauthenticated());
@@ -36,6 +44,10 @@ class AuthCubit extends Cubit<AuthState> {
         password: password,
       );
       _startSessionTimer();
+      LiveActivityService().setSchedule(
+        shiftStartTime: user.shiftStartTime,
+        shiftEndTime: user.shiftEndTime,
+      );
       emit(Authenticated(user));
     } catch (e) {
       emit(AuthError('Error al iniciar sesión: ${e.toString()}'));
@@ -47,6 +59,10 @@ class AuthCubit extends Cubit<AuthState> {
     try {
       final user = await _authRepository.loginWithBiometrics();
       _startSessionTimer();
+      LiveActivityService().setSchedule(
+        shiftStartTime: user.shiftStartTime,
+        shiftEndTime: user.shiftEndTime,
+      );
       emit(Authenticated(user));
     } catch (e) {
       emit(const AuthError('No se pudo validar la biometría. Intente con contraseña.'));
@@ -78,6 +94,7 @@ class AuthCubit extends Cubit<AuthState> {
 
   Future<void> confirmLogoutAfterExpiration() async {
     _sessionTimer.cancel();
+    await _trackingService?.onSignedOut();
     await NotificationService().cancelShiftNotification();
     await LiveActivityService().endShiftActivity();
     await _authRepository.logout();
@@ -88,6 +105,7 @@ class AuthCubit extends Cubit<AuthState> {
 
   Future<void> logout() async {
     _sessionTimer.cancel();
+    await _trackingService?.onSignedOut();
     await NotificationService().cancelShiftNotification();
     await LiveActivityService().endShiftActivity();
     emit(AuthLoading());

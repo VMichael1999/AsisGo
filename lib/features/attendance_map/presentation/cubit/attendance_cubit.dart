@@ -4,6 +4,7 @@ import '../../../../core/services/connectivity_service.dart';
 import '../../../../core/services/haptic_feedback_service.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../../../core/services/offline_sync_service.dart';
+import '../../../../core/tracking/attendance_tracking_service.dart';
 import '../../data/attendance_repository.dart';
 import '../../domain/attendance_record.dart';
 import '../../domain/shift_phase.dart';
@@ -19,6 +20,7 @@ class AttendanceCubit extends Cubit<AttendanceState> {
   StreamSubscription<bool>? _connectivitySub;
   StreamSubscription<SyncEvent>? _syncEventsSub;
   String? _activeUserId;
+  final AttendanceTrackingService? _trackingService;
 
   AttendanceCubit({
     required AttendanceRepository attendanceRepository,
@@ -26,7 +28,9 @@ class AttendanceCubit extends Cubit<AttendanceState> {
     ConnectivityService? connectivityService,
     OfflineSyncService? offlineSyncService,
     HapticFeedbackService? hapticFeedbackService,
+    AttendanceTrackingService? trackingService,
   })  : _attendanceRepository = attendanceRepository,
+        _trackingService = trackingService,
         _notificationService = notificationService ?? NotificationService(),
         _connectivityService = connectivityService ?? ConnectivityService(),
         _hapticFeedbackService = hapticFeedbackService ?? HapticFeedbackService.shared,
@@ -101,6 +105,10 @@ class AttendanceCubit extends Cubit<AttendanceState> {
 
       // Sincronizar notificacion persistente del turno en vivo
       _syncNotification(phase, records, last?.branchName ?? 'Sede Central');
+
+      // Retomar (o detener) el seguimiento GPS segun la fase del dia: cubre el
+      // reinicio del telefono o que el usuario haya cerrado la app.
+      unawaited(_trackingService?.onPhaseChanged(userId: userId, phase: phase));
     } catch (e) {
       emit(AttendanceError('Error al cargar la asistencia: ${e.toString()}'));
     }
@@ -128,6 +136,7 @@ class AttendanceCubit extends Cubit<AttendanceState> {
 
     try {
       final isOnline = _connectivityService.isOnline;
+      final permissionLabel = await _trackingService?.permissionLabel();
       final newRecord = await _attendanceRepository.registerAttendance(
         userId: userId,
         type: type,
@@ -140,6 +149,7 @@ class AttendanceCubit extends Cubit<AttendanceState> {
         distanceToGeozone: distanceToGeozone,
         isInsideGeozone: isInsideGeozone,
         isMockedLocation: isMockedLocation,
+        locationPermission: permissionLabel,
         note: note,
         selfiePath: selfiePath,
         isSynced: isOnline,
@@ -166,6 +176,9 @@ class AttendanceCubit extends Cubit<AttendanceState> {
 
       // Sincronizar notificacion persistente del turno
       _syncNotification(nextPhase, updatedRecords, branchName, isInsideGeozone: isInsideGeozone);
+
+      // Entrada/fin de refrigerio: inicia o reanuda el GPS; refrigerio: pausa; salida: detiene
+      unawaited(_trackingService?.onPhaseChanged(userId: userId, phase: nextPhase));
     } catch (e) {
       _hapticFeedbackService.securityAlert();
       emit(AttendanceError('Error al registrar la asistencia: ${e.toString()}'));
@@ -227,6 +240,7 @@ class AttendanceCubit extends Cubit<AttendanceState> {
       lunchStartTime: lunchStart?.timestamp,
       isInsideGeozone: _lastReportedInsideGeozone,
       punchesCount: records.length,
+      lastPunchTime: records.isNotEmpty ? records.last.timestamp : null,
     );
   }
 

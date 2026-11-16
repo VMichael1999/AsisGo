@@ -1,5 +1,5 @@
+import '../../core/theme/asis_palette.dart';
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart';
 
 class AsisActionButton extends StatelessWidget {
   final String label;
@@ -35,10 +35,11 @@ class AsisActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveBg = backgroundColor ?? AppColors.accent;
+    final effectiveBg = backgroundColor ?? context.palette.primary;
     final effectiveText = textColor ?? Colors.white;
     final bg = backgroundColor;
-    final effectiveDisabledBg = disabledBackgroundColor ??
+    final effectiveDisabledBg =
+        disabledBackgroundColor ??
         (bg != null ? bg.withValues(alpha: 0.85) : const Color(0xFF1E293B));
     final effectiveDisabledText = disabledTextColor ?? effectiveText;
 
@@ -59,37 +60,39 @@ class AsisActionButton extends StatelessWidget {
           ),
           padding: const EdgeInsets.symmetric(horizontal: 20),
         ),
-        child: isLoading
-            ? const SizedBox(
-                width: 22,
-                height: 22,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.2,
-                  color: Colors.white,
-                ),
-              )
-            : Row(
-                mainAxisSize: isFullWidth ? MainAxisSize.max : MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (icon != null) ...[
-                    Icon(icon, size: 20, color: effectiveText),
-                    const SizedBox(width: 8),
-                  ],
-                  Flexible(
-                    child: Text(
-                      label,
-                      style: TextStyle(
-                        fontSize: fontSize,
-                        fontWeight: FontWeight.w700,
-                        color: effectiveText,
-                        letterSpacing: -0.2,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
+        child:
+            isLoading
+                ? const SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.2,
+                    color: Colors.white,
                   ),
-                ],
-              ),
+                )
+                : Row(
+                  mainAxisSize:
+                      isFullWidth ? MainAxisSize.max : MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (icon != null) ...[
+                      Icon(icon, size: 20, color: effectiveText),
+                      const SizedBox(width: 8),
+                    ],
+                    Flexible(
+                      child: Text(
+                        label,
+                        style: TextStyle(
+                          fontSize: fontSize,
+                          fontWeight: FontWeight.w700,
+                          color: effectiveText,
+                          letterSpacing: -0.2,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
       ),
     );
 

@@ -185,10 +185,8 @@ void main() {
     await service.cancelShiftNotification();
   });
 
-  test('LiveActivityService exposes shiftActivityKey and handles safe lifecycle with geozone & phases', () async {
+  test('LiveActivityService handles safe lifecycle with geozone & phases', () async {
     final service = LiveActivityService();
-    expect(LiveActivityService.shiftActivityKey, equals('asisgo_shift_tracker'));
-    expect(LiveActivityService.appGroupId, equals('group.com.asisgo.app.asisgo'));
 
     final startTime = DateTime.now().subtract(const Duration(hours: 3));
 
@@ -302,6 +300,7 @@ class FakeAttendanceRepository implements AttendanceRepository {
     required double distanceToGeozone,
     required bool isInsideGeozone,
     bool isMockedLocation = false,
+    String? locationPermission,
     String? note,
     String? selfiePath,
     bool isSynced = true,

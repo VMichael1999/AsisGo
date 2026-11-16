@@ -5,6 +5,15 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Clave de Google Maps leida del .env de la raiz del proyecto (no versionado)
+val googleMapsApiKey: String = rootProject.file("../.env")
+    .takeIf { it.exists() }
+    ?.readLines()
+    ?.firstOrNull { it.startsWith("EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=") }
+    ?.substringAfter("=")
+    ?.trim()
+    ?: ""
+
 android {
     namespace = "com.asisgo.app.asisgo"
     compileSdk = flutter.compileSdkVersion
@@ -25,10 +34,11 @@ android {
         applicationId = "com.asisgo.app.asisgo"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdk = maxOf(flutter.minSdkVersion, 26)
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = googleMapsApiKey
     }
 
     buildTypes {

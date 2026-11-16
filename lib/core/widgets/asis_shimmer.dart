@@ -1,5 +1,5 @@
+import '../../core/theme/asis_palette.dart';
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart';
 
 /// Componente que aplica un efecto de brillo animado (shimmer) sobre sus hijos.
 class AsisShimmer extends StatefulWidget {
@@ -27,10 +27,8 @@ class _AsisShimmerState extends State<AsisShimmer>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: widget.duration,
-    )..repeat();
+    _controller = AnimationController(vsync: this, duration: widget.duration)
+      ..repeat();
   }
 
   @override
@@ -42,9 +40,11 @@ class _AsisShimmerState extends State<AsisShimmer>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final base = widget.baseColor ??
+    final base =
+        widget.baseColor ??
         (isDark ? const Color(0xFF1A2436) : const Color(0xFFCBD5E1));
-    final highlight = widget.highlightColor ??
+    final highlight =
+        widget.highlightColor ??
         (isDark ? const Color(0xFF3E5173) : const Color(0xFFFFFFFF));
 
     return AnimatedBuilder(
@@ -58,13 +58,11 @@ class _AsisShimmerState extends State<AsisShimmer>
             return LinearGradient(
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
-              colors: [
-                base,
-                highlight,
-                base,
-              ],
+              colors: [base, highlight, base],
               stops: const [0.0, 0.5, 1.0],
-              transform: _SlidingGradientTransform(slidePercent: dx / bounds.width),
+              transform: _SlidingGradientTransform(
+                slidePercent: dx / bounds.width,
+              ),
             ).createShader(bounds);
           },
           child: widget.child,
@@ -117,9 +115,12 @@ class AsisSkeletonBox extends StatelessWidget {
       margin: margin,
       padding: padding,
       decoration: BoxDecoration(
-        color: color ?? (isDark ? const Color(0xFF182234) : const Color(0xFFE2E8F0)),
+        color:
+            color ??
+            (isDark ? const Color(0xFF182234) : const Color(0xFFE2E8F0)),
         borderRadius: BorderRadius.circular(borderRadius),
-        border: border ??
+        border:
+            border ??
             Border.all(
               color: isDark ? const Color(0x334A628A) : const Color(0x1F000000),
               width: 1.0,
@@ -153,7 +154,9 @@ class AsisSkeletonCircle extends StatelessWidget {
       height: size,
       margin: margin,
       decoration: BoxDecoration(
-        color: color ?? (isDark ? const Color(0xFF182234) : const Color(0xFFE2E8F0)),
+        color:
+            color ??
+            (isDark ? const Color(0xFF182234) : const Color(0xFFE2E8F0)),
         shape: BoxShape.circle,
         border: Border.all(
           color: isDark ? const Color(0x334A628A) : const Color(0x1F000000),
@@ -210,15 +213,11 @@ class AsisLoadingOverlay extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      color: isDark ? AppColors.obsidianCanvas : AppColors.backgroundLight,
+      color: context.palette.background,
       child: Stack(
         children: [
           // 1. Esqueleto estructurado animado directamente sobre el canvas
-          Positioned.fill(
-            child: AsisShimmer(
-              child: skeleton,
-            ),
-          ),
+          Positioned.fill(child: AsisShimmer(child: skeleton)),
 
           // 2. Indicador de carga central con diseno pulido y bordes nitidos
           Center(
@@ -226,14 +225,12 @@ class AsisLoadingOverlay extends StatelessWidget {
               margin: const EdgeInsets.symmetric(horizontal: 28),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
               decoration: BoxDecoration(
-                color: isDark
-                    ? const Color(0xEA101726)
-                    : Colors.white.withValues(alpha: 0.96),
+                color:
+                    isDark
+                        ? const Color(0xEA101726)
+                        : Colors.white.withValues(alpha: 0.96),
                 borderRadius: BorderRadius.circular(22),
-                border: Border.all(
-                  color: isDark ? const Color(0x444E6A9C) : AppColors.borderLight,
-                  width: 1.2,
-                ),
+                border: Border.all(color: context.palette.border, width: 1.2),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: isDark ? 0.6 : 0.15),
@@ -246,11 +243,11 @@ class AsisLoadingOverlay extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (showSpinner) ...[
-                    const SizedBox(
+                    SizedBox(
                       width: 32,
                       height: 32,
                       child: CircularProgressIndicator(
-                        color: AppColors.accent,
+                        color: context.palette.primary,
                         strokeWidth: 3,
                       ),
                     ),
@@ -262,7 +259,7 @@ class AsisLoadingOverlay extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: isDark ? Colors.white : AppColors.textPrimary,
+                      color: context.palette.textPrimary,
                     ),
                   ),
                 ],

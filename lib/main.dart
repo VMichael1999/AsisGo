@@ -1,7 +1,10 @@
+import 'core/theme/asis_palette.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'app/main_navigation_shell.dart';
+import 'features/permissions/permissions_onboarding.dart';
 import 'core/contracts/i_security_service.dart';
 import 'core/security/security_service.dart';
 import 'core/services/connectivity_service.dart';
@@ -9,8 +12,11 @@ import 'core/services/haptic_feedback_service.dart';
 import 'core/services/location_service.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/offline_sync_service.dart';
+import 'core/services/permission_service.dart';
+import 'core/tracking/attendance_tracking_service.dart';
+import 'core/tracking/background_location_service.dart';
+import 'core/tracking/tracked_location.dart';
 import 'core/services/storage_service.dart';
-import 'core/constants/app_colors.dart';
 import 'core/theme/app_theme.dart';
 import 'features/attendance_map/data/attendance_repository.dart';
 import 'features/attendance_map/data/branch_repository.dart';
@@ -36,7 +42,8 @@ void main() async {
   final securityService = SecurityService(storageService);
   await securityService.init();
 
-  final notificationService = NotificationService();
+  final notificationService =
+      NotificationService()..attachStorage(storageService);
   await notificationService.initialize();
 
   final connectivityService = ConnectivityService();
@@ -44,12 +51,6 @@ void main() async {
 
   // Inicializacion de repositorios de datos
   final authRepository = AuthRepository(storageService);
-  if (storageService.getUserSession() == null) {
-    await authRepository.loginWithCredentials(
-      email: 'carlos.mendoza@asisgo.com',
-      password: 'demo',
-    );
-  }
   final branchRepository = BranchRepository(locationService);
   final attendanceRepository = AttendanceRepository(storageService);
   await attendanceRepository.init();
@@ -64,6 +65,22 @@ void main() async {
 
   final hapticFeedbackService = HapticFeedbackService(storageService);
 
+  // Permisos y seguimiento GPS de la jornada (solo con la jornada en curso)
+  final permissionService = PermissionService();
+  final pointStore = PrefsLocationPointStore(
+    await SharedPreferences.getInstance(),
+  );
+  final backgroundLocation = BackgroundLocationService(
+    permissions: permissionService,
+    store: pointStore,
+    connectivity: connectivityService,
+  );
+  final trackingService = AttendanceTrackingService(
+    location: backgroundLocation,
+    permissions: permissionService,
+    store: pointStore,
+  );
+
   runApp(
     AsisGoApp(
       authRepository: authRepository,
@@ -75,6 +92,8 @@ void main() async {
       connectivityService: connectivityService,
       offlineSyncService: offlineSyncService,
       hapticFeedbackService: hapticFeedbackService,
+      permissionService: permissionService,
+      trackingService: trackingService,
     ),
   );
 }
@@ -89,6 +108,8 @@ class AsisGoApp extends StatelessWidget {
   final ConnectivityService connectivityService;
   final OfflineSyncService offlineSyncService;
   final HapticFeedbackService hapticFeedbackService;
+  final IPermissionService permissionService;
+  final AttendanceTrackingService trackingService;
 
   const AsisGoApp({
     super.key,
@@ -101,6 +122,8 @@ class AsisGoApp extends StatelessWidget {
     required this.connectivityService,
     required this.offlineSyncService,
     required this.hapticFeedbackService,
+    required this.permissionService,
+    required this.trackingService,
   });
 
   @override
@@ -116,53 +139,63 @@ class AsisGoApp extends StatelessWidget {
         RepositoryProvider.value(value: connectivityService),
         RepositoryProvider.value(value: offlineSyncService),
         RepositoryProvider.value(value: hapticFeedbackService),
+        RepositoryProvider<IPermissionService>.value(value: permissionService),
+        RepositoryProvider.value(value: trackingService),
       ],
       child: MultiBlocProvider(
         providers: [
           BlocProvider<AuthCubit>(
-            create: (ctx) => AuthCubit(authRepository)..checkAuthStatus(),
+            create:
+                (ctx) =>
+                    AuthCubit(authRepository, trackingService: trackingService)
+                      ..checkAuthStatus(),
           ),
           BlocProvider<LocationCubit>(
-            create: (ctx) => LocationCubit(
-              locationService: locationService,
-              branchRepository: branchRepository,
-              securityService: securityService,
-            ),
+            create:
+                (ctx) => LocationCubit(
+                  locationService: locationService,
+                  branchRepository: branchRepository,
+                  securityService: securityService,
+                ),
           ),
           BlocProvider<AttendanceCubit>(
-            create: (ctx) => AttendanceCubit(
-              attendanceRepository: attendanceRepository,
-              connectivityService: connectivityService,
-              offlineSyncService: offlineSyncService,
-              hapticFeedbackService: hapticFeedbackService,
-            ),
+            create:
+                (ctx) => AttendanceCubit(
+                  attendanceRepository: attendanceRepository,
+                  connectivityService: connectivityService,
+                  offlineSyncService: offlineSyncService,
+                  hapticFeedbackService: hapticFeedbackService,
+                  trackingService: trackingService,
+                ),
           ),
           BlocProvider<CalendarCubit>(
-            create: (ctx) => CalendarCubit(
-              attendanceRepository: attendanceRepository,
-            ),
+            create:
+                (ctx) =>
+                    CalendarCubit(attendanceRepository: attendanceRepository),
           ),
           BlocProvider<JustificationCubit>(
-            create: (ctx) => JustificationCubit(
-              repository: justificationRepository,
-              hapticService: hapticFeedbackService,
-            ),
+            create:
+                (ctx) => JustificationCubit(
+                  repository: justificationRepository,
+                  hapticService: hapticFeedbackService,
+                ),
           ),
         ],
         child: MaterialApp(
           title: 'AsisGo',
           debugShowCheckedModeBanner: false,
-          theme: AppTheme.darkTheme,
+          theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
-          themeMode: ThemeMode.dark,
+          // Sigue el modo claro/oscuro del sistema
+          themeMode: ThemeMode.system,
           home: BlocBuilder<AuthCubit, AuthState>(
             builder: (context, state) {
               if (state is Authenticated || state is AuthSessionExpired) {
-                return const MainNavigationShell();
+                return const PermissionsGate(child: MainNavigationShell());
               }
               if (state is AuthLoading) {
-                return const Scaffold(
-                  backgroundColor: AppColors.obsidianCanvas,
+                return Scaffold(
+                  backgroundColor: context.palette.background,
                   body: AsisLoadingOverlay(
                     skeleton: AsisLoginSkeleton(),
                     message: 'Iniciando sesión en AsisGo...',

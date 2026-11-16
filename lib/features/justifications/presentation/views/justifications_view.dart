@@ -1,6 +1,6 @@
+import '../../../../core/theme/asis_palette.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/haptic_feedback_service.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
 import '../../domain/incident_justification.dart';
@@ -33,8 +33,6 @@ class _JustificationsViewState extends State<JustificationsView> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return BlocConsumer<JustificationCubit, JustificationState>(
       listener: (context, state) {
         if (state is JustificationLoaded && state.feedbackMessage != null) {
@@ -44,8 +42,13 @@ class _JustificationsViewState extends State<JustificationsView> {
               content: Row(
                 children: [
                   Icon(
-                    state.isSuccessMessage ? Icons.check_circle_rounded : Icons.error_outline_rounded,
-                    color: state.isSuccessMessage ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                    state.isSuccessMessage
+                        ? Icons.check_circle_rounded
+                        : Icons.error_outline_rounded,
+                    color:
+                        state.isSuccessMessage
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFFEF4444),
                     size: 22,
                   ),
                   const SizedBox(width: 10),
@@ -67,7 +70,10 @@ class _JustificationsViewState extends State<JustificationsView> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
                 side: BorderSide(
-                  color: state.isSuccessMessage ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                  color:
+                      state.isSuccessMessage
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFEF4444),
                   width: 1.2,
                 ),
               ),
@@ -79,43 +85,40 @@ class _JustificationsViewState extends State<JustificationsView> {
       },
       builder: (context, state) {
         return Scaffold(
-          backgroundColor: isDark ? AppColors.obsidianCanvas : AppColors.backgroundLight,
+          backgroundColor: context.palette.background,
           appBar: AppBar(
-            title: const Text('Mis Justificaciones'),
-            backgroundColor: isDark ? AppColors.obsidianCanvas : Colors.white,
+            title: const Text('Mis justificaciones'),
             elevation: 0,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.refresh_rounded),
-                tooltip: 'Actualizar',
-                onPressed: () {
-                  final authState = context.read<AuthCubit>().state;
-                  final userId = authState.currentUser?.id ?? 'USR-001';
-                  context.read<JustificationCubit>().loadJustifications(userId);
-                },
-              ),
-            ],
           ),
-          body: _buildBody(context, state, isDark),
+          body: _buildBody(context, state),
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () async {
               HapticFeedbackService.shared.selectionClick();
               await NewJustificationSheet.show(context);
             },
-            backgroundColor: AppColors.accent,
+            backgroundColor: context.palette.primary,
             foregroundColor: Colors.white,
             icon: const Icon(Icons.add_rounded),
-            label: const Text('Nueva Justificación', style: TextStyle(fontWeight: FontWeight.bold)),
+            label: const Text(
+              'Nueva justificación',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
           ),
         );
       },
     );
   }
 
-  Widget _buildBody(BuildContext context, JustificationState state, bool isDark) {
+  Future<void> _reload(BuildContext context) async {
+    final authState = context.read<AuthCubit>().state;
+    final userId = authState.currentUser?.id ?? 'USR-001';
+    await context.read<JustificationCubit>().loadJustifications(userId);
+  }
+
+  Widget _buildBody(BuildContext context, JustificationState state) {
     if (state is JustificationLoading || state is JustificationInitial) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.accent),
+      return Center(
+        child: CircularProgressIndicator(color: context.palette.primary),
       );
     }
 
@@ -126,20 +129,23 @@ class _JustificationsViewState extends State<JustificationsView> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline_rounded, color: Color(0xFFEF4444), size: 48),
+              Icon(
+                Icons.cloud_off_rounded,
+                color: context.palette.textSecondary,
+                size: 48,
+              ),
               const SizedBox(height: 12),
               Text(
                 state.message,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: isDark ? Colors.white : AppColors.textPrimary),
+                style: TextStyle(
+                  fontSize: 15,
+                  color: context.palette.textPrimary,
+                ),
               ),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () {
-                  final authState = context.read<AuthCubit>().state;
-                  final userId = authState.currentUser?.id ?? 'USR-001';
-                  context.read<JustificationCubit>().loadJustifications(userId);
-                },
+                onPressed: () => _reload(context),
                 child: const Text('Reintentar'),
               ),
             ],
@@ -149,224 +155,174 @@ class _JustificationsViewState extends State<JustificationsView> {
     }
 
     final loaded = state as JustificationLoaded;
+    final items = loaded.filteredJustifications;
 
-    return RefreshIndicator(
-      color: AppColors.accent,
-      onRefresh: () async {
-        final authState = context.read<AuthCubit>().state;
-        final userId = authState.currentUser?.id ?? 'USR-001';
-        await context.read<JustificationCubit>().loadJustifications(userId);
-      },
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
-        children: [
-          // 1. Tarjetas de métricas
-          _buildMetricsRow(loaded, isDark),
-          const SizedBox(height: 16),
-
-          // 2. Filtro por estado
-          _buildFilterChips(context, loaded, isDark),
-          const SizedBox(height: 14),
-
-          // 3. Lista de Justificaciones
-          if (loaded.filteredJustifications.isEmpty)
-            _buildEmptyState(isDark)
-          else
-            ...loaded.filteredJustifications.map((item) {
-              return JustificationCard(item: item);
-            }),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMetricsRow(JustificationLoaded loaded, bool isDark) {
-    return Row(
+    return Column(
       children: [
+        // Filtro por estado (los contadores van en cada opcion)
+        _StatusFilterBar(loaded: loaded),
         Expanded(
-          child: _buildMetricCard(
-            label: 'Total',
-            value: '${loaded.totalCount}',
-            color: const Color(0xFF3B82F6),
-            isDark: isDark,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: _buildMetricCard(
-            label: 'Pendientes',
-            value: '${loaded.pendingCount}',
-            color: const Color(0xFFF59E0B),
-            isDark: isDark,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: _buildMetricCard(
-            label: 'Aprobadas',
-            value: '${loaded.approvedCount}',
-            color: const Color(0xFF10B981),
-            isDark: isDark,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: _buildMetricCard(
-            label: 'Rechazadas',
-            value: '${loaded.rejectedCount}',
-            color: const Color(0xFFEF4444),
-            isDark: isDark,
+          child: RefreshIndicator(
+            color: context.palette.primary,
+            onRefresh: () => _reload(context),
+            child:
+                items.isEmpty
+                    ? ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: [_buildEmptyState(loaded.filterStatus)],
+                    )
+                    : ListView.separated(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      // Espacio inferior para que el boton flotante no tape la ultima tarjeta
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 104),
+                      itemCount: items.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 12),
+                      itemBuilder:
+                          (context, index) =>
+                              JustificationCard(item: items[index]),
+                    ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildMetricCard({
-    required String label,
-    required String value,
-    required Color color,
-    required bool isDark,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF131926) : Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isDark ? const Color(0x22FFFFFF) : AppColors.borderLight,
-        ),
+  Widget _buildEmptyState(JustificationStatus? filter) {
+    final (title, message) = switch (filter) {
+      null => (
+        'Aún no tienes justificaciones',
+        'Cuando registres una tardanza, permiso o descanso médico aparecerá aquí.',
       ),
+      JustificationStatus.pending => (
+        'Nada pendiente',
+        'No tienes justificaciones esperando revisión de RR. HH.',
+      ),
+      JustificationStatus.approved => (
+        'Sin aprobadas',
+        'Todavía no se ha aprobado ninguna de tus justificaciones.',
+      ),
+      JustificationStatus.rejected => (
+        'Sin rechazadas',
+        'Ninguna de tus justificaciones ha sido rechazada.',
+      ),
+    };
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(32, 64, 32, 32),
       child: Column(
         children: [
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: isDark ? AppColors.textMuted : AppColors.textSecondary,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilterChips(BuildContext context, JustificationLoaded loaded, bool isDark) {
-    final cubit = context.read<JustificationCubit>();
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          _buildChip(
-            label: 'Todas (${loaded.totalCount})',
-            isSelected: loaded.filterStatus == null,
-            color: AppColors.accent,
-            onTap: () => cubit.setFilter(null),
-          ),
-          const SizedBox(width: 8),
-          _buildChip(
-            label: 'Pendientes (${loaded.pendingCount})',
-            isSelected: loaded.filterStatus == JustificationStatus.pending,
-            color: const Color(0xFFF59E0B),
-            onTap: () => cubit.setFilter(JustificationStatus.pending),
-          ),
-          const SizedBox(width: 8),
-          _buildChip(
-            label: 'Aprobadas (${loaded.approvedCount})',
-            isSelected: loaded.filterStatus == JustificationStatus.approved,
-            color: const Color(0xFF10B981),
-            onTap: () => cubit.setFilter(JustificationStatus.approved),
-          ),
-          const SizedBox(width: 8),
-          _buildChip(
-            label: 'Rechazadas (${loaded.rejectedCount})',
-            isSelected: loaded.filterStatus == JustificationStatus.rejected,
-            color: const Color(0xFFEF4444),
-            onTap: () => cubit.setFilter(JustificationStatus.rejected),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildChip({
-    required String label,
-    required bool isSelected,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return ActionChip(
-      label: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-          color: isSelected ? Colors.white : color,
-        ),
-      ),
-      backgroundColor: isSelected ? color.withValues(alpha: 0.85) : color.withValues(alpha: 0.1),
-      side: BorderSide(
-        color: isSelected ? color : color.withValues(alpha: 0.3),
-        width: 1,
-      ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      onPressed: () {
-        HapticFeedbackService.shared.selectionClick();
-        onTap();
-      },
-    );
-  }
-
-  Widget _buildEmptyState(bool isDark) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
-      alignment: Alignment.center,
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E2638) : const Color(0xFFF1F5F9),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.done_all_rounded,
-              size: 40,
-              color: isDark ? AppColors.textMuted : AppColors.textSecondary,
-            ),
+          Icon(
+            Icons.inbox_outlined,
+            size: 48,
+            color: context.palette.textMuted,
           ),
           const SizedBox(height: 16),
           Text(
-            'Sin Justificaciones Registradas',
+            title,
+            textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : AppColors.textPrimary,
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              color: context.palette.textPrimary,
             ),
           ),
           const SizedBox(height: 6),
           Text(
-            'No hay incidencias que coincidan con el filtro seleccionado.',
+            message,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 12,
-              color: isDark ? AppColors.textMuted : AppColors.textSecondary,
+              fontSize: 14,
+              height: 1.4,
+              color: context.palette.textSecondary,
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Barra de filtros por estado: una sola fila desplazable, opciones neutras
+/// y la seleccionada en el color de marca.
+class _StatusFilterBar extends StatelessWidget {
+  final JustificationLoaded loaded;
+
+  const _StatusFilterBar({required this.loaded});
+
+  @override
+  Widget build(BuildContext context) {
+    final cubit = context.read<JustificationCubit>();
+    final options = <(String, int, JustificationStatus?)>[
+      ('Todas', loaded.totalCount, null),
+      ('Pendientes', loaded.pendingCount, JustificationStatus.pending),
+      ('Aprobadas', loaded.approvedCount, JustificationStatus.approved),
+      ('Rechazadas', loaded.rejectedCount, JustificationStatus.rejected),
+    ];
+
+    return SizedBox(
+      height: 64,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+        itemCount: options.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final (label, count, status) = options[index];
+          final selected = loaded.filterStatus == status;
+          return Semantics(
+            selected: selected,
+            button: true,
+            child: Material(
+              color: selected ? context.palette.primary : context.palette.surface,
+              shape: StadiumBorder(
+                side: BorderSide(
+                  color:
+                      selected
+                          ? context.palette.primary
+                          : context.palette.border,
+                ),
+              ),
+              child: InkWell(
+                customBorder: const StadiumBorder(),
+                onTap: () {
+                  HapticFeedbackService.shared.selectionClick();
+                  cubit.setFilter(status);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        label,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color:
+                              selected
+                                  ? Colors.white
+                                  : context.palette.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '$count',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color:
+                              selected
+                                  ? Colors.white70
+                                  : context.palette.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

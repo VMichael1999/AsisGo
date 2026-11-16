@@ -36,7 +36,6 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter_bloc: ^9.1.1
   equatable: ^3.0.0
-  flutter_map: ^8.3.2
   latlong2: ^0.10.1
   geolocator: ^14.0.2
   table_calendar: ^3.2.1
@@ -46,8 +45,10 @@ dependencies:
   google_fonts: ^6.3.2
   uuid: ^4.6.0
   flutter_local_notifications: ^19.5.0
-  live_activities: ^2.4.2
   connectivity_plus: ^7.3.1
+  google_maps_flutter: ^2.19.0
+  live_island_kit: ^0.4.0
+  permission_handler: ^13.0.2
 
 dev_dependencies:
   flutter_test:
@@ -70,6 +71,10 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  assets:
+    - assets/markers/
+    - assets/logo/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

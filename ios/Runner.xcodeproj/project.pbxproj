@@ -7,26 +7,38 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0615A7FA5C120F22EFB01DA8 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D9213C5A510F83DF879936 /* SwiftUI.framework */; };
+		120356BDB437A6EA0627231C /* LiveIslandAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A3298E14292764809CEA4BD /* LiveIslandAttributes.swift */; };
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
-		1C12DFBAAF8E4E39A3561EB5 /* AsisGoWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E5CF12904EF9953B635A0467 /* AsisGoWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		1B64D173458532CFDFC74864 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 19BD6B85DBC0674E67BAAE6C /* WidgetKit.framework */; };
+		22F018537A0B6DD2F74E16BE /* LiveLayoutModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 167BD31AA227518A5DC8B19F /* LiveLayoutModel.swift */; };
+		31C5B2405C0046F075D88614 /* LiveRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1B84088004811607B82A3A /* LiveRenderer.swift */; };
 		331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C807B294A618700263BE5 /* RunnerTests.swift */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
+		67FF25E25068A4A7681A6113 /* LiveIslandBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDE4293A407803D839FC1092 /* LiveIslandBundle.swift */; };
+		691B6FFDED7C9CCAC61B881D /* LiveStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 329446709FE59AD2C5BCBC82 /* LiveStorage.swift */; };
 		6E99805A075014147F327B17 /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7AAF69967264C526069437AF /* Pods_Runner.framework */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
-		8591B9D3C3F1483DF3F2420D /* AsisGoWidgetsBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49231FC270F56AEFB1DE0C4D /* AsisGoWidgetsBundle.swift */; };
-		8F632A6118DBA09068E44293 /* ShiftLiveActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED76B3956B152FDC7D6F9A76 /* ShiftLiveActivityWidget.swift */; };
+		7875036275979B16D3CC2BA6 /* LiveIslandWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 906FCFB0A28A418A7E17FAC6 /* LiveIslandWidget.swift */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
+		9864DAA81CF3067438CDEF5A /* LiveStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = B60FD4FE0CF69D91DD26EAE0 /* LiveStyle.swift */; };
+		AB9EBFF53ABBEA3DF5D67F7C /* ActivityKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8EEE50432214C239E17508A3 /* ActivityKit.framework */; };
+		AE0FF89A04681C6F13005807 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F0B2B57F58692B487E23C5E /* Foundation.framework */; };
+		BD3B85D50562455E156F9713 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 6443AD793D77D3D9543608F4 /* PrivacyInfo.xcprivacy */; };
+		D6476F5EA906D201DDCB9F2B /* LiveIslandAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2661345ED6AA309E02EF6DC0 /* LiveIslandAction.swift */; };
+		E01F9F4AEDB28DC6D99651D8 /* LiveIslandExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9075CB9F1E4670F6BA8443A6 /* LiveIslandExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		FF7117DADD01B4A5331B8A24 /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C7207ED0690CFE7297F1FB7 /* Pods_RunnerTests.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		07DA25195887D6F93EBC371A /* PBXContainerItemProxy */ = {
+		30CE8EC7B8417E339EFD8F71 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = DE35718B833E89BB6D067757;
+			remoteGlobalIDString = CB5A344CD5E313DDA3FC39DF;
+			remoteInfo = LiveIslandExtension;
 		};
 		331C8085294A63A400263BE5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -44,7 +56,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				1C12DFBAAF8E4E39A3561EB5 /* AsisGoWidgets.appex in Embed Foundation Extensions */,
+				E01F9F4AEDB28DC6D99651D8 /* LiveIslandExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -64,18 +76,26 @@
 /* Begin PBXFileReference section */
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
-		305F7FFFCEB94DC9BC120631 /* Info.plist */ = {isa = PBXFileReference; explicitFileType = text.plist; lastKnownFileType = text.plist; name = Info.plist; path = Info.plist; sourceTree = "<group>"; };
+		167BD31AA227518A5DC8B19F /* LiveLayoutModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveLayoutModel.swift; sourceTree = "<group>"; };
+		19BD6B85DBC0674E67BAAE6C /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/WidgetKit.framework; sourceTree = DEVELOPER_DIR; };
+		2661345ED6AA309E02EF6DC0 /* LiveIslandAction.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveIslandAction.swift; sourceTree = "<group>"; };
+		329446709FE59AD2C5BCBC82 /* LiveStorage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveStorage.swift; sourceTree = "<group>"; };
 		331C807B294A618700263BE5 /* RunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunnerTests.swift; sourceTree = "<group>"; };
 		331C8081294A63A400263BE5 /* RunnerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RunnerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = AppFrameworkInfo.plist; path = Flutter/AppFrameworkInfo.plist; sourceTree = "<group>"; };
-		49231FC270F56AEFB1DE0C4D /* AsisGoWidgetsBundle.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; lastKnownFileType = sourcecode.swift; name = AsisGoWidgetsBundle.swift; path = AsisGoWidgetsBundle.swift; sourceTree = "<group>"; };
+		4AEBA0AEFD03CD8122C7568D /* Runner.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
+		5A3298E14292764809CEA4BD /* LiveIslandAttributes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveIslandAttributes.swift; sourceTree = "<group>"; };
 		5C7207ED0690CFE7297F1FB7 /* Pods_RunnerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RunnerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		6443AD793D77D3D9543608F4 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		6CAECA3481AD42589A4BB819 /* Pods-RunnerTests.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.profile.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.profile.xcconfig"; sourceTree = "<group>"; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
 		74858FAE1ED2DC5600515810 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7AA8B78AFE3BFD30A9A110DE /* Pods-Runner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"; sourceTree = "<group>"; };
 		7AAF69967264C526069437AF /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Flutter/Release.xcconfig; sourceTree = "<group>"; };
+		8EEE50432214C239E17508A3 /* ActivityKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ActivityKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/ActivityKit.framework; sourceTree = DEVELOPER_DIR; };
+		906FCFB0A28A418A7E17FAC6 /* LiveIslandWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveIslandWidget.swift; sourceTree = "<group>"; };
+		9075CB9F1E4670F6BA8443A6 /* LiveIslandExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = LiveIslandExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		938493C5D2FAADD120ED0980 /* Pods-Runner.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile.xcconfig"; sourceTree = "<group>"; };
 		9740EEB21CF90195004384FC /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Debug.xcconfig; path = Flutter/Debug.xcconfig; sourceTree = "<group>"; };
 		9740EEB31CF90195004384FC /* Generated.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Generated.xcconfig; path = Flutter/Generated.xcconfig; sourceTree = "<group>"; };
@@ -85,13 +105,31 @@
 		97C147001CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		98807105A07311DEDCE08D7E /* Pods-RunnerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.debug.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.debug.xcconfig"; sourceTree = "<group>"; };
+		9F0B2B57F58692B487E23C5E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		A76776A614222DCF1E583CC8 /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
+		B60FD4FE0CF69D91DD26EAE0 /* LiveStyle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveStyle.swift; sourceTree = "<group>"; };
+		B737F931193F81FA881A1FAB /* LiveIslandExtension.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = LiveIslandExtension.entitlements; sourceTree = "<group>"; };
+		B7D9213C5A510F83DF879936 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/SwiftUI.framework; sourceTree = DEVELOPER_DIR; };
 		B8B82A1B4DD7BCA9681ECC59 /* Pods-RunnerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release.xcconfig"; sourceTree = "<group>"; };
-		E5CF12904EF9953B635A0467 /* AsisGoWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AsisGoWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		ED76B3956B152FDC7D6F9A76 /* ShiftLiveActivityWidget.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; lastKnownFileType = sourcecode.swift; name = ShiftLiveActivityWidget.swift; path = ShiftLiveActivityWidget.swift; sourceTree = "<group>"; };
+		CB1B84088004811607B82A3A /* LiveRenderer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveRenderer.swift; sourceTree = "<group>"; };
+		CD373EA04BA9C79CF5EEC030 /* LEEME.md */ = {isa = PBXFileReference; includeInIndex = 1; path = LEEME.md; sourceTree = "<group>"; };
+		EC014FC0CD2177B35A9D9E3E /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		EDE4293A407803D839FC1092 /* LiveIslandBundle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveIslandBundle.swift; sourceTree = "<group>"; };
+		F58B94D21589DB6081F26D41 /* LiveIslandExtension.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = LiveIslandExtension.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		26B734E3EE4A3E8C6E7B301E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AE0FF89A04681C6F13005807 /* Foundation.framework in Frameworks */,
+				0615A7FA5C120F22EFB01DA8 /* SwiftUI.framework in Frameworks */,
+				1B64D173458532CFDFC74864 /* WidgetKit.framework in Frameworks */,
+				AB9EBFF53ABBEA3DF5D67F7C /* ActivityKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		447BE139559BE2A1BD2FBBC9 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -108,22 +146,52 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		F26FDCDCAB451840D5D3F8E1 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0D80585D7002267931CA749F /* Widget */ = {
+			isa = PBXGroup;
+			children = (
+				EDE4293A407803D839FC1092 /* LiveIslandBundle.swift */,
+				906FCFB0A28A418A7E17FAC6 /* LiveIslandWidget.swift */,
+			);
+			name = Widget;
+			path = Widget;
+			sourceTree = "<group>";
+		};
 		331C8082294A63A400263BE5 /* RunnerTests */ = {
 			isa = PBXGroup;
 			children = (
 				331C807B294A618700263BE5 /* RunnerTests.swift */,
 			);
 			path = RunnerTests;
+			sourceTree = "<group>";
+		};
+		439E05F8AA5C719C35AA696D /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				2661345ED6AA309E02EF6DC0 /* LiveIslandAction.swift */,
+				5A3298E14292764809CEA4BD /* LiveIslandAttributes.swift */,
+				329446709FE59AD2C5BCBC82 /* LiveStorage.swift */,
+			);
+			name = Shared;
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		4B97A019F238205DE08FFF80 /* LiveIslandExtension */ = {
+			isa = PBXGroup;
+			children = (
+				439E05F8AA5C719C35AA696D /* Shared */,
+				DC7127434746EB196A2CC4C4 /* Renderer */,
+				0D80585D7002267931CA749F /* Widget */,
+				EC014FC0CD2177B35A9D9E3E /* Info.plist */,
+				B737F931193F81FA881A1FAB /* LiveIslandExtension.entitlements */,
+				F58B94D21589DB6081F26D41 /* LiveIslandExtension.xcconfig */,
+				CD373EA04BA9C79CF5EEC030 /* LEEME.md */,
+				6443AD793D77D3D9543608F4 /* PrivacyInfo.xcprivacy */,
+			);
+			name = LiveIslandExtension;
+			path = LiveIslandExtension;
 			sourceTree = "<group>";
 		};
 		810147D1517A16158CFE2BF7 /* Pods */ = {
@@ -160,7 +228,7 @@
 				331C8082294A63A400263BE5 /* RunnerTests */,
 				810147D1517A16158CFE2BF7 /* Pods */,
 				A8091D69FF6679F86AB131FB /* Frameworks */,
-				F76F77E9689C2D5F102F3D88 /* AsisGoWidgets */,
+				4B97A019F238205DE08FFF80 /* LiveIslandExtension */,
 			);
 			sourceTree = "<group>";
 		};
@@ -169,7 +237,7 @@
 			children = (
 				97C146EE1CF9000F007C117D /* Runner.app */,
 				331C8081294A63A400263BE5 /* RunnerTests.xctest */,
-				E5CF12904EF9953B635A0467 /* AsisGoWidgets.appex */,
+				9075CB9F1E4670F6BA8443A6 /* LiveIslandExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -185,8 +253,20 @@
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
+				4AEBA0AEFD03CD8122C7568D /* Runner.entitlements */,
 			);
 			path = Runner;
+			sourceTree = "<group>";
+		};
+		A6648E7EF79D9478D85C10B5 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				9F0B2B57F58692B487E23C5E /* Foundation.framework */,
+				B7D9213C5A510F83DF879936 /* SwiftUI.framework */,
+				19BD6B85DBC0674E67BAAE6C /* WidgetKit.framework */,
+				8EEE50432214C239E17508A3 /* ActivityKit.framework */,
+			);
+			name = iOS;
 			sourceTree = "<group>";
 		};
 		A8091D69FF6679F86AB131FB /* Frameworks */ = {
@@ -194,18 +274,20 @@
 			children = (
 				7AAF69967264C526069437AF /* Pods_Runner.framework */,
 				5C7207ED0690CFE7297F1FB7 /* Pods_RunnerTests.framework */,
+				A6648E7EF79D9478D85C10B5 /* iOS */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		F76F77E9689C2D5F102F3D88 /* AsisGoWidgets */ = {
+		DC7127434746EB196A2CC4C4 /* Renderer */ = {
 			isa = PBXGroup;
 			children = (
-				49231FC270F56AEFB1DE0C4D /* AsisGoWidgetsBundle.swift */,
-				ED76B3956B152FDC7D6F9A76 /* ShiftLiveActivityWidget.swift */,
-				305F7FFFCEB94DC9BC120631 /* Info.plist */,
+				167BD31AA227518A5DC8B19F /* LiveLayoutModel.swift */,
+				CB1B84088004811607B82A3A /* LiveRenderer.swift */,
+				B60FD4FE0CF69D91DD26EAE0 /* LiveStyle.swift */,
 			);
-			path = AsisGoWidgets;
+			name = Renderer;
+			path = Renderer;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -235,40 +317,41 @@
 			buildConfigurationList = 97C147051CF9000F007C117D /* Build configuration list for PBXNativeTarget "Runner" */;
 			buildPhases = (
 				36E8D3EEE9E511A7EFAC4AC4 /* [CP] Check Pods Manifest.lock */,
+				889DE6F8664908D135C720D4 /* Embed Foundation Extensions */,
 				9740EEB61CF901F6004384FC /* Run Script */,
 				97C146EA1CF9000F007C117D /* Sources */,
 				97C146EB1CF9000F007C117D /* Frameworks */,
 				97C146EC1CF9000F007C117D /* Resources */,
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
-				889DE6F8664908D135C720D4 /* Embed Foundation Extensions */,
 				0876AB685F71C043348311B2 /* [CP] Embed Pods Frameworks */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
+				8599E7641879EA802D6A3A53 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				7B645D2D8F60B0724B48FB2E /* PBXTargetDependency */,
+				8F44B246B0561C2D14C55CF9 /* PBXTargetDependency */,
 			);
 			name = Runner;
 			productName = Runner;
 			productReference = 97C146EE1CF9000F007C117D /* Runner.app */;
 			productType = "com.apple.product-type.application";
 		};
-		DE35718B833E89BB6D067757 /* AsisGoWidgets */ = {
+		CB5A344CD5E313DDA3FC39DF /* LiveIslandExtension */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = EDCB315450D8251A7665D3BB /* Build configuration list for PBXNativeTarget "AsisGoWidgets" */;
+			buildConfigurationList = D1CE02627ED07C13D0068541 /* Build configuration list for PBXNativeTarget "LiveIslandExtension" */;
 			buildPhases = (
-				56A093CFD1736643004E16C0 /* Sources */,
-				F26FDCDCAB451840D5D3F8E1 /* Frameworks */,
-				320490AFC545C6B6EF64D1FD /* Resources */,
+				485A6D80C22738AC99B069C1 /* Sources */,
+				26B734E3EE4A3E8C6E7B301E /* Frameworks */,
+				7F7BB530903C9EEF6689A272 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = AsisGoWidgets;
-			productName = AsisGoWidgets;
-			productReference = E5CF12904EF9953B635A0467 /* AsisGoWidgets.appex */;
+			name = LiveIslandExtension;
+			productName = LiveIslandExtension;
+			productReference = 9075CB9F1E4670F6BA8443A6 /* LiveIslandExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
@@ -306,23 +389,24 @@
 			targets = (
 				97C146ED1CF9000F007C117D /* Runner */,
 				331C8080294A63A400263BE5 /* RunnerTests */,
-				DE35718B833E89BB6D067757 /* AsisGoWidgets */,
+				CB5A344CD5E313DDA3FC39DF /* LiveIslandExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		320490AFC545C6B6EF64D1FD /* Resources */ = {
+		331C807F294A63A400263BE5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		331C807F294A63A400263BE5 /* Resources */ = {
+		7F7BB530903C9EEF6689A272 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BD3B85D50562455E156F9713 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -395,6 +479,23 @@
 			shellPath = /bin/sh;
 			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin";
 		};
+		8599E7641879EA802D6A3A53 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		9740EEB61CF901F6004384FC /* Run Script */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -443,12 +544,18 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		56A093CFD1736643004E16C0 /* Sources */ = {
+		485A6D80C22738AC99B069C1 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8591B9D3C3F1483DF3F2420D /* AsisGoWidgetsBundle.swift in Sources */,
-				8F632A6118DBA09068E44293 /* ShiftLiveActivityWidget.swift in Sources */,
+				D6476F5EA906D201DDCB9F2B /* LiveIslandAction.swift in Sources */,
+				120356BDB437A6EA0627231C /* LiveIslandAttributes.swift in Sources */,
+				691B6FFDED7C9CCAC61B881D /* LiveStorage.swift in Sources */,
+				22F018537A0B6DD2F74E16BE /* LiveLayoutModel.swift in Sources */,
+				31C5B2405C0046F075D88614 /* LiveRenderer.swift in Sources */,
+				9864DAA81CF3067438CDEF5A /* LiveStyle.swift in Sources */,
+				67FF25E25068A4A7681A6113 /* LiveIslandBundle.swift in Sources */,
+				7875036275979B16D3CC2BA6 /* LiveIslandWidget.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -469,10 +576,11 @@
 			target = 97C146ED1CF9000F007C117D /* Runner */;
 			targetProxy = 331C8085294A63A400263BE5 /* PBXContainerItemProxy */;
 		};
-		7B645D2D8F60B0724B48FB2E /* PBXTargetDependency */ = {
+		8F44B246B0561C2D14C55CF9 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = DE35718B833E89BB6D067757 /* AsisGoWidgets */;
-			targetProxy = 07DA25195887D6F93EBC371A /* PBXContainerItemProxy */;
+			name = LiveIslandExtension;
+			target = CB5A344CD5E313DDA3FC39DF /* LiveIslandExtension */;
+			targetProxy = 30CE8EC7B8417E339EFD8F71 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -496,45 +604,6 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
-		08FB9C590CD96489546407A3 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_ENTITLEMENTS = AsisGoWidgets/AsisGoWidgetsExtension.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = AsisGoWidgets/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = AsisGoWidgets;
-				INFOPLIST_KEY_NSExtensionPointIdentifier = "com.apple.widgetkit-extension";
-				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				MTL_ENABLE_DEBUG_INFO = NO;
-				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.asisgo.app.asisgo.AsisGoWidgets;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
 		249021D3217E4FDB00AE95B9 /* Profile */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -609,6 +678,32 @@
 			};
 			name = Profile;
 		};
+		2A66262008A34D1CA2446FCB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = F58B94D21589DB6081F26D41 /* LiveIslandExtension.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = LiveIslandExtension/LiveIslandExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = LiveIslandExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.asisgo.app.asisgo.LiveIslandExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
 		331C8088294A63A400263BE5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 98807105A07311DEDCE08D7E /* Pods-RunnerTests.debug.xcconfig */;
@@ -659,44 +754,59 @@
 			};
 			name = Profile;
 		};
-		618A5F1650D71846CE418000 /* Profile */ = {
+		3EFC263432674E7B670C187C /* Profile */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = F58B94D21589DB6081F26D41 /* LiveIslandExtension.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_ENTITLEMENTS = AsisGoWidgets/AsisGoWidgetsExtension.entitlements;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = LiveIslandExtension/LiveIslandExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = AsisGoWidgets/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = AsisGoWidgets;
-				INFOPLIST_KEY_NSExtensionPointIdentifier = "com.apple.widgetkit-extension";
-				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = LiveIslandExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
-				MTL_ENABLE_DEBUG_INFO = NO;
-				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.asisgo.app.asisgo.AsisGoWidgets;
+				PRODUCT_BUNDLE_IDENTIFIER = com.asisgo.app.asisgo.LiveIslandExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
 			};
 			name = Profile;
+		};
+		8999175B7D4A5EFFC364DE13 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = F58B94D21589DB6081F26D41 /* LiveIslandExtension.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = LiveIslandExtension/LiveIslandExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = LiveIslandExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.asisgo.app.asisgo.LiveIslandExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
 		};
 		97C147031CF9000F007C117D /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -854,46 +964,6 @@
 			};
 			name = Release;
 		};
-		DAC362D40A0D33CDBBE2FECB /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_ENTITLEMENTS = AsisGoWidgets/AsisGoWidgetsExtension.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEBUG_INFORMATION_FORMAT = dwarf;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = AsisGoWidgets/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = AsisGoWidgets;
-				INFOPLIST_KEY_NSExtensionPointIdentifier = "com.apple.widgetkit-extension";
-				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
-				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.asisgo.app.asisgo.AsisGoWidgets;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -927,12 +997,12 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		EDCB315450D8251A7665D3BB /* Build configuration list for PBXNativeTarget "AsisGoWidgets" */ = {
+		D1CE02627ED07C13D0068541 /* Build configuration list for PBXNativeTarget "LiveIslandExtension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				DAC362D40A0D33CDBBE2FECB /* Debug */,
-				618A5F1650D71846CE418000 /* Profile */,
-				08FB9C590CD96489546407A3 /* Release */,
+				8999175B7D4A5EFFC364DE13 /* Release */,
+				2A66262008A34D1CA2446FCB /* Debug */,
+				3EFC263432674E7B670C187C /* Profile */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
