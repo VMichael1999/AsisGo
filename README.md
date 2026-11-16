@@ -1,234 +1,190 @@
-# AsisGo - Sistema Móvil Corporativo de Control de Asistencia y Geolocalización
+# AsisGo
 
-AsisGo es una solución móvil de nivel empresarial desarrollada en Flutter para la gestión, control y auditoría de asistencia de personal en tiempo real, respaldada por validación geodésica de alta precisión, Live Activities nativas (Dynamic Island en iOS y Notificaciones en Vivo en Android), modo offline con auto-sincronización y mecanismos de seguridad de hardware contra suplantación de ubicación.
+**Control de asistencia corporativo con geolocalización, hecho en Flutter.**
+
+AsisGo permite a los colaboradores registrar su jornada (entrada, refrigerio y salida) validando que se encuentran dentro de la geocerca de su sede. Funciona sin conexión, sigue activo en segundo plano con **Dynamic Island** y **Live Activity** en iOS y notificación en vivo en Android, e incorpora detección de ubicación falsa (Fake GPS).
+
+> Estado: aplicación de demostración. Los datos de empresas, sedes y usuarios son locales (ver [Cuentas de demostración](#cuentas-de-demostración)).
 
 ---
 
-## Capturas de Pantalla de la Aplicación
+## Capturas de pantalla
 
-| Inicio de Sesión Corporativo | Mapa de Asistencia (Google Maps) | Marcación Rápida & Selfie |
+| Inicio de sesión | Mapa de asistencia | Marcación rápida y selfie |
 | :---: | :---: | :---: |
-| <img src="docs/screenshots/01_login_screen.png" width="260" alt="Inicio de Sesión Corporativo" /> | <img src="docs/screenshots/02_map.png" width="260" alt="Mapa de Asistencia con Geocercas" /> | <img src="docs/screenshots/03_attendance_modal.png" width="260" alt="Modal de Asistencia Simplificado" /> |
+| <img src="docs/screenshots/01_login_screen.png" width="260" alt="Inicio de sesión" /> | <img src="docs/screenshots/02_map.png" width="260" alt="Mapa de asistencia con geocercas" /> | <img src="docs/screenshots/03_attendance_modal.png" width="260" alt="Modal de asistencia" /> |
 
-| Selección de Empresa & Sedes | Calendario & Auditoría | Perfil, Horario & Permisos |
+| Empresas y sedes | Calendario y auditoría | Perfil, horario y permisos |
 | :---: | :---: | :---: |
-| <img src="docs/screenshots/04_companies.png" width="260" alt="Selección de Empresa y Sedes" /> | <img src="docs/screenshots/05_calendar.png" width="260" alt="Calendario e Historial de Marcas" /> | <img src="docs/screenshots/06_user_profile.png" width="260" alt="Perfil del Colaborador, Horario y Permisos" /> |
+| <img src="docs/screenshots/04_companies.png" width="260" alt="Selección de empresa y sedes" /> | <img src="docs/screenshots/05_calendar.png" width="260" alt="Calendario e historial de marcas" /> | <img src="docs/screenshots/06_user_profile.png" width="260" alt="Perfil, horario y permisos" /> |
 
-**Dynamic Island y Live Activity en iOS**
+**Dynamic Island y Live Activity (iOS)**
 
-| Dynamic Island (expandida) | Pantalla de Bloqueo |
+| Dynamic Island expandida | Pantalla de bloqueo |
 | :---: | :---: |
 | <img src="docs/screenshots/07_dynamic_island.png" width="400" alt="Dynamic Island con la jornada activa" /> | <img src="docs/screenshots/08_live_activity_lockscreen.png" width="400" alt="Live Activity en la pantalla de bloqueo" /> |
 
 **Flujo de permisos tras iniciar sesión**
 
-| Antes de empezar | Ubicación | Movimiento y actividad física | Ubicación "Siempre" |
+| Antes de empezar | Ubicación | Movimiento y actividad física | Ubicación «Siempre» |
 | :---: | :---: | :---: | :---: |
 | <img src="docs/screenshots/09_permissions_intro.png" width="200" alt="Pantalla explicativa de permisos" /> | <img src="docs/screenshots/10_permission_location.png" width="200" alt="Permiso de ubicación" /> | <img src="docs/screenshots/11_permission_motion.png" width="200" alt="Permiso de movimiento y actividad física" /> | <img src="docs/screenshots/12_permission_always.png" width="200" alt="Permiso de ubicación siempre" /> |
 
 ---
 
-## Características Principales
+## Características
 
-### 1. Dynamic Island y Live Activities (iOS)
-- Integración nativa con **ActivityKit** y **WidgetKit** mediante extensiones nativas en Swift (`AsisGoWidgets`).
-- Modos de presentación adaptativos:
-  - **Dynamic Island Compact:** Temporizador en tiempo real a nivel de hardware y estado de turno activo.
-  - **Dynamic Island Expanded:** Visualización completa de fase de turno (Turno activo vs. Refrigerio), badge semántico de geocerca (Dentro/Fuera de zona asignada), dirección y sede corporativa.
-  - **Lock Screen / StandBy:** Tarjeta Obsidian de alta elegancia visual con cronómetro continuo sincronizado sin consumo excesivo de batería.
+### Asistencia y mapa
+- **Mapa de Google Maps** con geocercas y marcadores de las sedes, paleta azul corporativa y modo claro/oscuro.
+- **Ciclo de jornada** como máquina de estados: entrada → inicio de refrigerio → fin de refrigerio → salida (o salida anticipada).
+- **Marcación rápida:** validación de proximidad con la fórmula de Haversine, selfie frontal opcional o exigida por política y comentario opcional.
+- **Jerarquía de tres niveles:** empresa → sucursal → geocerca (coordenadas y radio en metros). Al elegir una empresa o sede, el mapa muestra solo sus geocercas.
 
-### 2. Notificaciones en Vivo en Tiempo Real (Android)
-- Implementación nativa con **RemoteViews** y canal de notificación persistente de alta prioridad silenciosa (`IMPORTANCE_HIGH`).
-- Uso de componentes nativos `<Chronometer>` de hardware para un conteo fluido de segundos sin necesidad de despertar el procesador periódicamente.
-- Badges dinámicos con tonalidades Obsidian y Emerald: estado de permanencia en geocerca (`Dentro de Geocerca` / `Fuera de Geocerca`) y fase de turno (`Turno de Trabajo` / `Refrigerio`).
-- Integración con el sistema mediante botón de acción directo (`Abrir AsisGo`) que devuelve al usuario al contexto exacto de su jornada.
+### Segundo plano y Live Activities
+- **iOS:** Dynamic Island (compacta y expandida) y tarjeta en la pantalla de bloqueo con cronómetro de la jornada, hora de entrada, tiempo restante y hora de salida. Implementada con [`live_island_kit`](https://pub.dev/packages/live_island_kit) y una extensión WidgetKit propia.
+- **Android:** notificación persistente con `RemoteViews` y `<Chronometer>` nativo, y botón para volver a la app.
+- **Seguimiento en segundo plano:** el recorrido se registra durante la jornada, empieza con la entrada y se detiene al marcar la salida.
 
-### 3. Modo Offline Automático y Sincronización de Marcaciones
-- **Operación Natural sin Conexión:** Si el colaborador se encuentra sin internet (sin Wi-Fi o datos móviles), el sistema permite registrar la asistencia normalmente.
-- **Cola Local Persistente:** La marcación se almacena de forma segura en la base de datos local del dispositivo con estado pendiente de sincronización (`isSynced = false`).
-- **Auto-Sync al Reconectar:** Apenas el dispositivo vuelve a tener señal de internet, el servicio despacha y sincroniza automáticamente las marcas pendientes con el servidor.
-- **Botón de Sincronización Manual:** En la sección "Mi Perfil", el colaborador dispone del botón **"Sincronizar Marcaciones"** para consultar el estado de sus marcas y enviarlas manualmente cuando lo requiera.
+### Permisos con explicación previa
+Tras iniciar sesión, la app explica para qué usa cada permiso antes de pedirlo: ubicación («Siempre»), movimiento y condición física (opcional) y privacidad. El estado de cada permiso se puede revisar desde **Mi Perfil**.
 
-### 4. Sesión Perenne y Continuidad de Servicio
-- **Autenticación Continua:** La sesión del colaborador permanece abierta de forma perenne. El aplicativo no cierra sesión de forma automática, garantizando que el usuario pueda registrar asistencia al instante y sin retrasos.
-- **Persistencia en Segundo Plano:** Al cerrar o enviar la app a segundo plano, las Live Activities en la Dynamic Island (iOS) y la notificación en tiempo real (Android) continúan activas durante toda la jornada laboral.
+### Modo sin conexión
+- Las marcaciones se guardan en una cola local con estado pendiente (`isSynced = false`).
+- Al recuperar la conexión se sincronizan automáticamente.
+- En **Mi Perfil** hay un botón para sincronizar manualmente y ver el estado de las marcas.
 
-### 5. Módulo de Justificaciones e Incidencias Laborales
-- Gestión completa de incidencias y justificaciones vinculadas al historial de asistencia.
-- Categorización de solicitudes: Permiso médico, Cita médica, Fallas técnicas/dispositivo, Falta injustificada, Comisión de servicios y Asuntos particulares.
-- Selector de fecha, registro detallado de motivos y soporte para adjuntos fotográficos y documentales (JPG, PNG, PDF).
-- Visor integrado de documentos adjuntos con interfaz modal y zoom.
+### Sesión perenne
+La sesión no expira por inactividad, de modo que el colaborador puede marcar al instante. Al cerrar la app o enviarla a segundo plano, la Live Activity (iOS) y la notificación (Android) siguen activas durante toda la jornada.
 
-### 6. Seguridad Avanzada y Detección Anti-Fake GPS
-- Verificación de telemetría de hardware en tiempo de ejecución para identificar proveedores simulados (Mock Providers), aplicaciones de falseo de ubicación y anomalías en la precisión de señal satelital.
-- Bloqueo preventivo de marcaciones cuando se detectan discrepancias o herramientas de suplantación activas en el dispositivo.
-- Control de modo estricto en producción con bandera configurable a nivel de servicio para pruebas unitarias y entornos de desarrollo controlados.
+### Historial y justificaciones
+- Calendario con resumen mensual (días asistidos, tardanzas y horas trabajadas) y estado por día: completa, con tardanza o incompleta.
+- Justificaciones de incidencias con categorías (permiso médico, cita médica, falla técnica, falta injustificada, comisión de servicios y asuntos particulares), selector de fecha y adjuntos (JPG, PNG y PDF) con visor integrado.
 
-### 7. Jerarquía Corporativa Multi-Empresa de Tres Niveles
-El sistema implementa una estructura de datos normalizada para organizaciones corporativas:
-- **Nivel 1: Empresa (Corporativo):** Datos fiscales, identidad visual, RUC y directivas de asistencia.
-- **Nivel 2: Sucursales (Sedes):** Establecimientos físicos distribuidos geográficamente en Lima (BCP, BBVA, Interbank, Scotiabank, Entelgy) con códigos de identificación únicos.
-- **Nivel 3: Geocercas Autorizadas (Centros):** Coordenadas geodésicas centrales (latitud, longitud), radios de tolerancia métrica (100 m - 150 m) y nombres asignados por área operativa (Oficinas Administrativas, Torre Principal, Plataforma Financiera).
-
-### 8. Aislamiento Visual en Mapa Interactivo
-- Renderizado de mapa en modo Midnight Dark optimizado para visualización en exteriores y reducción de fatiga visual.
-- Aislamiento estricto de entidades: al seleccionar una empresa o sede específica, el mapa renderiza exclusivamente las geocercas y marcadores de dicha entidad, evitando la saturación de elementos ajenos.
-- Controles de recentrado automático, sincronización satelital y exploración directa de sedes asociadas.
-
-### 9. Ciclo de Turno Laboral y Marcación Rápida
-- Máquina de estados para el ciclo de jornada:
-  1. Entrada inicial (`checkIn`)
-  2. Inicio de refrigerio (`lunchStart`)
-  3. Fin de refrigerio (`lunchEnd`)
-  4. Salida de jornada (`checkOut` o salida anticipada)
-- Modal simplificado de asistencia diseñado para registro rápido: cálculo geodésico Haversine de proximidad, verificación facial mediante selfie frontal y campo opcional para notas operativas.
-
-### 10. Historial de Asistencia y Calendario de Auditoría
-- Resumen mensual de métricas clave (horas efectivas laboradas, días asistidos y porcentaje global de puntualidad con tolerancia de entrada).
-- Vista de pestañas integradas para alternar entre "Historial de Marcas" y "Justificaciones".
+### Seguridad
+- Detección de proveedores de ubicación simulados y de precisión anómala; las marcaciones se bloquean si se detecta suplantación.
+- La protección está activa por defecto y puede desactivarse solo en desarrollo (ver [Opciones de compilación](#opciones-de-compilación)).
 
 ---
 
-## Arquitectura de Software
+## Arquitectura
 
-El proyecto sigue una arquitectura desacoplada basada en Clean Architecture y el patrón de gestión de estado BLoC / Cubit:
+Clean Architecture por funcionalidad, con estado gestionado con **BLoC / Cubit**.
 
 ```
 lib/
-├── app/
-│   └── main_navigation_shell.dart         # Contenedor de navegación principal y escucha de estados
+├── app/                          # Navegación principal (shell con pestañas)
 ├── core/
-│   ├── constants/
-│   │   ├── app_colors.dart                # Paleta de color corporativa y diseño medianoche
-│   │   └── app_constants.dart             # Llaves de almacenamiento y parámetros del sistema
-│   ├── contracts/
-│   │   ├── i_attendance_repository.dart   # Contrato de repositorio de asistencia
-│   │   ├── i_location_service.dart        # Contrato de servicios de localización
-│   │   ├── i_security_service.dart        # Contrato de servicios de seguridad anti-mock
-│   │   └── i_storage_service.dart         # Contrato para almacenamiento local
-│   ├── security/
-│   │   ├── security_service.dart          # Lógica de detección de proveedores simulados
-│   │   ├── security_check_result.dart     # Modelo de dictamen de integridad
-│   │   └── session_timer_manager.dart     # Gestor del temporizador de sesión
-│   ├── services/
-│   │   ├── connectivity_service.dart      # Monitoreo de conectividad real del dispositivo
-│   │   ├── haptic_feedback_service.dart   # Respuestas táctiles del sistema
-│   │   ├── live_activity_service.dart     # Enlace MethodChannel con iOS ActivityKit
-│   │   ├── location_service.dart          # Transmisión GPS y fórmulas geodésicas Haversine
-│   │   ├── notification_service.dart      # Notificaciones locales en vivo (Android RemoteViews)
-│   │   ├── offline_sync_service.dart      # Gestión de cola y auto-sincronización al detectar red
-│   │   └── storage_service.dart           # Persistencia local mediante SharedPreferences
-│   ├── theme/
-│   │   └── app_theme.dart                 # Configuración de temas claro y medianoche oscuro
-│   ├── utils/
-│   │   └── date_formatter.dart            # Utilidades de formato de fechas y horas en español
-│   └── widgets/
-│       ├── asis_action_button.dart        # Botón con soporte de estados y temas de alto contraste
-│       ├── asis_glass_card.dart           # Componente de tarjeta con efecto frosted glass
-│       ├── asis_security_dialog.dart      # Diálogo modal de alerta de suplantación GPS
-│       └── asis_session_expired_dialog.dart # Diálogo modal de sesión
+│   ├── config/                   # Flags de compilación (anti Fake GPS)
+│   ├── constants/                # Colores y constantes
+│   ├── contracts/                # Interfaces de repositorios y servicios
+│   ├── security/                 # Detección de ubicación simulada, temporizador de sesión
+│   ├── services/                 # Ubicación, permisos, notificaciones, Live Activity,
+│   │                             # conectividad, sincronización offline, almacenamiento
+│   ├── theme/                    # Tema claro/oscuro y paleta
+│   ├── tracking/                 # Seguimiento de ubicación en segundo plano
+│   ├── utils/                    # Formato de fechas
+│   └── widgets/                  # Botones, tarjetas, diálogos, skeletons y shimmer
 └── features/
-    ├── attendance_map/
-    │   ├── data/
-    │   │   ├── attendance_repository.dart # Repositorio de marcas y soporte de cola offline
-    │   │   └── branch_repository.dart     # Repositorio multi-empresa y sedes de Lima
-    │   ├── domain/
-    │   │   ├── attendance_record.dart     # Entidad de registro de asistencia con flag de sincronización
-    │   │   ├── branch.dart                # Entidad de sede y geocercas
-    │   │   ├── company.dart               # Entidad corporativa
-    │   │   └── shift_phase.dart           # Enum de fases de turno y transiciones
-    │   └── presentation/
-    │       ├── cubit/                     # Cubits de asistencia y localización
-    │       ├── views/                     # Pantalla de mapa y explorador de sucursales
-    │       └── widgets/                   # Docks, botones flotantes, badges offline y modal de marcación
-    ├── auth/
-    │   ├── data/auth_repository.dart      # Repositorio de credenciales y usuarios demo
-    │   ├── domain/user_model.dart         # Modelo de usuario corporativo
-    │   └── presentation/                  # Vistas y cubit de autenticación
-    ├── calendar_history/
-    │   └── presentation/                  # Cubit y vista de calendario con pestañas de auditoría
-    ├── justifications/
-    │   ├── data/justification_repository.dart # Persistencia y categorías de incidencias
-    │   ├── domain/justification_model.dart    # Modelo de entidad de justificación
-    │   └── presentation/
-    │       ├── cubit/                         # Cubit de justificaciones
-    │       ├── views/                         # Lista de justificaciones y visor de adjuntos
-    │       └── widgets/                       # Formulario modal de nueva justificación
-    └── profile/
-        └── views/profile_view.dart        # Vista de perfil, horario y sincronización manual
+    ├── attendance_map/           # Mapa, marcación, sedes y empresas
+    ├── auth/                     # Login (credenciales y biometría)
+    ├── calendar_history/         # Calendario e historial
+    ├── justifications/           # Justificaciones e incidencias
+    ├── permissions/              # Pantalla «Antes de empezar»
+    └── profile/                  # Perfil, horario y estado de permisos
 ```
 
----
-
-## Extensiones Nativas
-
-### iOS (WidgetKit & ActivityKit)
-- Ubicación: `ios/AsisGoWidgets/`
-- Archivos clave:
-  - `AsisGoWidgetsBundle.swift`: Punto de entrada del bundle de widgets.
-  - `ShiftLiveActivityWidget.swift`: Definición de vistas para Dynamic Island (compactTrailing, compactLeading, minimal, expanded) y Lock Screen banner.
-  - `AsisGoWidgets.swift`: Atributos y estado de contenido de Live Activity (`AsisGoLiveActivityAttributes`).
-
-### Android (RemoteViews & Foreground Service)
-- Ubicación: `android/app/src/main/`
-- Archivos clave:
-  - `res/layout/notification_island_expanded.xml`: Layout personalizado para bandeja desplegada con `<Chronometer>` nativo.
-  - `res/layout/notification_island_collapsed.xml`: Layout compacto para vista colapsada en barra de notificaciones.
-  - `kotlin/com/asisgo/app/asisgo/MainActivity.kt`: MethodChannel para despachar `RemoteViews`, canal de notificación persistente y enlace con el ciclo de vida.
+Cada funcionalidad se divide en `data/`, `domain/` y `presentation/` (`cubit/`, `views/`, `widgets/`).
 
 ---
 
-## Requisitos del Entorno
+## Extensiones nativas
 
-- **Flutter SDK:** >= 3.19.0 (Canal Stable)
-- **Dart SDK:** >= 3.3.0
-- **Android:** API Nivel 26 (Android 8.0) o superior para Live Notifications
-- **iOS:** iOS 15.0+ (iOS 16.1+ para soporte de Dynamic Island / Live Activities)
-- **macOS:** Requerido para compilación iOS / Xcode
+### iOS — `ios/LiveIslandExtension/`
+Extensión WidgetKit/ActivityKit generada con `live_island_kit`:
+- `Widget/LiveIslandWidget.swift`: diseño SwiftUI de la Dynamic Island y de la pantalla de bloqueo. Lee los valores que envía `lib/core/services/live_activity_service.dart`.
+- `Shared/` y `Renderer/`: atributos de la actividad, almacenamiento compartido y renderizado.
+- Requiere un **App Group** (`group.com.asisgo.app.asisgo`).
+
+> No vuelvas a ejecutar `dart run live_island_kit:setup` sin respaldar `LiveIslandWidget.swift`: lo reescribe y se pierde el diseño propio.
+
+### Android — `android/app/src/main/`
+- `kotlin/com/asisgo/app/asisgo/MainActivity.kt`: canal de plataforma que construye la notificación en vivo.
+- `res/layout/notification_island_expanded.xml` y `notification_island_collapsed.xml`: vistas expandida y colapsada con cronómetro nativo.
 
 ---
 
-## Instalación y Ejecución
+## Requisitos
 
-1. Clonar el repositorio:
+- **Flutter** estable con **Dart ≥ 3.7.2**.
+- **iOS 16.1+** (necesario para Live Activities y Dynamic Island). Requiere macOS y Xcode.
+- **Android 8.0 (API 26)** o superior.
+- Una **clave de Google Maps** para iOS y Android.
+
+---
+
+## Instalación y ejecución
+
 ```bash
 git clone https://github.com/VMichael1999/AsisGo.git
 cd AsisGo
-```
-
-2. Descargar las dependencias del proyecto:
-```bash
 flutter pub get
 ```
 
-3. Ejecutar el análisis estático de código:
-```bash
-dart analyze
-```
+Configura la clave de Google Maps:
+- **Android:** se lee del *placeholder* `GOOGLE_MAPS_API_KEY` en `android/app/src/main/AndroidManifest.xml`.
+- **iOS:** se registra en `ios/Runner/AppDelegate.swift` (`GMSServices.provideAPIKey`).
 
-4. Ejecutar la suite completa de pruebas unitarias:
-```bash
-flutter test
-```
+Luego ejecuta en un dispositivo o simulador:
 
-5. Iniciar la aplicación en el dispositivo o simulador activo:
 ```bash
 flutter run
 ```
 
+### Dynamic Island en el simulador de iOS
+`flutter run` y `flutter build ios --simulator` no incrustan el App Group, y sin él la Dynamic Island no arranca. Para verla en el simulador, compila con `xcodebuild`:
+
+```bash
+flutter build ios --simulator --debug --config-only --dart-define=STRICT_MOCK_PROTECTION=false
+
+xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner -configuration Debug \
+  -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+  -derivedDataPath build/ios_sim_dd \
+  CODE_SIGN_IDENTITY="-" CODE_SIGNING_ALLOWED=YES CODE_SIGNING_REQUIRED=NO DEVELOPMENT_TEAM="" build
+
+xcrun simctl install booted build/ios_sim_dd/Build/Products/Debug-iphonesimulator/Runner.app
+xcrun simctl launch booted com.asisgo.app.asisgo
+```
+
+### Opciones de compilación
+
+| Opción | Valor por defecto | Uso |
+| :--- | :---: | :--- |
+| `--dart-define=STRICT_MOCK_PROTECTION=false` | `true` | Desactiva la protección contra Fake GPS. Solo para desarrollo o simulador, donde la ubicación es simulada. |
+
 ---
 
-## Cuentas de Acceso de Demostración
+## Pruebas y análisis
 
-Para fines de prueba y validación rápida, la aplicación incluye credenciales precargadas:
+```bash
+dart analyze
+flutter test
+```
 
-| Correo Electrónico | Contraseña | Cargo Asignado | Empresa |
-| :--- | :--- | :--- | :--- |
-| `carlos.mendoza@empresa.com` | `123456` | Senior Systems Engineer | Banco de Crédito BCP |
-| `ana.torres@empresa.com` | `123456` | Lead Security Architect | BBVA Perú |
+Las pruebas cubren el cubit de asistencia, el resumen por día, el seguimiento en segundo plano, la sincronización offline, el servicio de seguridad, las justificaciones, el diseño de la Live Activity y la respuesta háptica.
+
+---
+
+## Cuentas de demostración
+
+La pantalla de inicio de sesión incluye accesos rápidos a estos usuarios. En modo demostración **la contraseña no se valida**.
+
+| Correo | Cargo | Horario |
+| :--- | :--- | :---: |
+| `carlos.mendoza@asisgo.com` | Ingeniero de Software Senior | 08:30 – 18:00 |
+| `mariana.ruiz@asisgo.com` | Especialista de RRHH y Talento | 09:00 – 18:30 |
 
 ---
 
 ## Licencia
 
-Este proyecto está bajo licencia de uso corporativo confidencial. Todos los derechos reservados.
+Uso corporativo confidencial. Todos los derechos reservados.
