@@ -93,8 +93,8 @@ class _LoginViewState extends State<LoginView> {
                         // Logotipo corporativo de la aplicacion
                         Center(
                           child: Container(
-                            width: 76,
-                            height: 76,
+                            width: 80,
+                            height: 80,
                             decoration: BoxDecoration(
                               color: context.palette.primary,
                               borderRadius: BorderRadius.circular(22),
@@ -107,17 +107,23 @@ class _LoginViewState extends State<LoginView> {
                               boxShadow: [
                                 BoxShadow(
                                   color: context.palette.primary.withValues(
-                                    alpha: 0.2,
+                                    alpha: 0.25,
                                   ),
                                   blurRadius: 18,
                                   offset: const Offset(0, 6),
                                 ),
                               ],
                             ),
-                            child: Icon(
-                              Icons.location_city_rounded,
-                              size: 40,
-                              color: context.palette.primary,
+                            clipBehavior: Clip.antiAlias,
+                            child: Image.asset(
+                              'assets/logo/asisgo_icon.png',
+                              fit: BoxFit.cover,
+                              errorBuilder:
+                                  (_, __, ___) => const Icon(
+                                    Icons.where_to_vote_rounded,
+                                    size: 40,
+                                    color: Colors.white,
+                                  ),
                             ),
                           ),
                         ),
