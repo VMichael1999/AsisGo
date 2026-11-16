@@ -20,6 +20,12 @@ AsisGo es una solución móvil de nivel empresarial desarrollada en Flutter para
 | :---: | :---: |
 | <img src="docs/screenshots/07_dynamic_island.png" width="400" alt="Dynamic Island con la jornada activa" /> | <img src="docs/screenshots/08_live_activity_lockscreen.png" width="400" alt="Live Activity en la pantalla de bloqueo" /> |
 
+**Flujo de permisos tras iniciar sesión**
+
+| Antes de empezar | Ubicación | Movimiento y actividad física | Ubicación "Siempre" |
+| :---: | :---: | :---: | :---: |
+| <img src="docs/screenshots/09_permissions_intro.png" width="200" alt="Pantalla explicativa de permisos" /> | <img src="docs/screenshots/10_permission_location.png" width="200" alt="Permiso de ubicación" /> | <img src="docs/screenshots/11_permission_motion.png" width="200" alt="Permiso de movimiento y actividad física" /> | <img src="docs/screenshots/12_permission_always.png" width="200" alt="Permiso de ubicación siempre" /> |
+
 ---
 
 ## Características Principales
