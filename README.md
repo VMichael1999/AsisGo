@@ -14,6 +14,12 @@ AsisGo es una solución móvil de nivel empresarial desarrollada en Flutter para
 | :---: | :---: | :---: |
 | <img src="docs/screenshots/04_companies.png" width="260" alt="Selección de Empresa y Sedes" /> | <img src="docs/screenshots/05_calendar.png" width="260" alt="Calendario e Historial de Marcas" /> | <img src="docs/screenshots/06_user_profile.png" width="260" alt="Perfil del Colaborador, Horario y Permisos" /> |
 
+**Dynamic Island y Live Activity en iOS**
+
+| Dynamic Island (expandida) | Pantalla de Bloqueo |
+| :---: | :---: |
+| <img src="docs/screenshots/07_dynamic_island.png" width="400" alt="Dynamic Island con la jornada activa" /> | <img src="docs/screenshots/08_live_activity_lockscreen.png" width="400" alt="Live Activity en la pantalla de bloqueo" /> |
+
 ---
 
 ## Características Principales
